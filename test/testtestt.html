@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Тест по теме: Рассеивание данных</title>
   <style>
-    /* Общие стили */
+    /* Общие стили в стиле Telegram */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -13,155 +13,185 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
       color: #333;
-      line-height: 1.6;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 10px;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 500px;
       margin: 20px auto;
       background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
     }
 
     h1 {
       text-align: center;
       color: white;
-      background-color: #3498db;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      font-size: 28px;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      padding: 20px;
+      margin-bottom: 0;
+      font-size: 22px;
+      font-weight: 600;
     }
 
     .section {
-      background-color: #f9f9f9;
       padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 22px;
+      border-bottom: 1px solid #e6e6e6;
+    }
+
+    .section:last-child {
+      border-bottom: none;
     }
 
     .section-title {
-      background-color: #3498db;
-      color: white;
-      padding: 10px 12px;
-      border-radius: 6px;
+      color: #1e93c4;
       margin-bottom: 16px;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .section-title:before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: #1e93c4;
+      border-radius: 2px;
+      margin-right: 8px;
     }
 
     /* Информация об ученике */
     .student-info {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 16px;
     }
 
     .student-info label {
       display: block;
       margin-bottom: 6px;
-      font-weight: 600;
+      font-weight: 500;
+      color: #555;
     }
 
     .student-info input,
     .student-info select {
       width: 100%;
-      padding: 11px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
       font-size: 16px;
+      background: #f9f9f9;
+      transition: all 0.2s;
+    }
+
+    .student-info input:focus,
+    .student-info select:focus {
+      outline: none;
+      border-color: #1e93c4;
+      background: white;
+      box-shadow: 0 0 0 2px rgba(30, 147, 196, 0.2);
     }
 
     .start-test-btn {
-      margin-top: 20px;
+      margin-top: 10px;
       width: 100%;
-      padding: 15px;
-      font-size: 18px;
+      padding: 16px;
+      font-size: 17px;
+      font-weight: 600;
     }
 
     /* Прогресс-бар */
     .progress-container {
-      background-color: #ecf0f1;
-      border-radius: 12px;
-      height: 32px;
-      margin-bottom: 14px;
+      background-color: #e6e6e6;
+      border-radius: 10px;
+      height: 8px;
+      margin-bottom: 12px;
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
       width: 0%;
-      background: linear-gradient(to right, #3498db, #2980b9);
-      transition: width 0.4s ease, background-color 0.4s ease;
+      background: linear-gradient(90deg, #1e93c4 0%, #38a1d6 100%);
+      transition: width 0.4s ease;
+      border-radius: 10px;
     }
 
     .progress-text {
       text-align: center;
-      font-weight: bold;
-      margin-top: 8px;
-      font-size: 16px;
+      font-weight: 500;
+      font-size: 14px;
+      color: #666;
     }
 
     /* Вопрос */
     .question-container {
-      text-align: center;
-      padding: 20px;
+      padding: 10px 0;
     }
 
     .question-text {
-      font-size: 20px;
-      margin-bottom: 25px;
-      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: 500;
       line-height: 1.4;
+      color: #222;
     }
 
     .options-container {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 25px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .option-label {
       display: flex;
       align-items: center;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border: 2px solid #e9ecef;
-      border-radius: 8px;
+      padding: 16px;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s;
       font-size: 16px;
     }
 
     .option-label:hover {
-      background-color: #e9ecef;
-      border-color: #3498db;
+      background-color: #eef7fd;
+      border-color: #1e93c4;
     }
 
     .option-label.selected {
-      background-color: #d4edda;
-      border-color: #28a745;
+      background-color: #e1f2ff;
+      border-color: #1e93c4;
+      box-shadow: 0 2px 5px rgba(30, 147, 196, 0.2);
     }
 
     .option-label.correct {
-      background-color: #d4edda;
-      border-color: #28a745;
-      animation: pulse 0.5s;
+      background-color: #e1f7e9;
+      border-color: #34b86e;
+      box-shadow: 0 2px 5px rgba(52, 184, 110, 0.2);
     }
 
     .option-label.incorrect {
-      background-color: #f8d7da;
-      border-color: #dc3545;
+      background-color: #fde8e8;
+      border-color: #f36;
+      box-shadow: 0 2px 5px rgba(255, 51, 102, 0.2);
     }
 
     .option-label input {
       margin-right: 12px;
-      transform: scale(1.2);
+      transform: scale(1.3);
+      accent-color: #1e93c4;
     }
 
     @keyframes pulse {
@@ -172,30 +202,27 @@
 
     /* Кнопки */
     .button-container {
-      text-align: center;
-      margin: 22px 0;
       display: flex;
       justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      margin: 20px 0 10px;
     }
 
     button {
-      padding: 13px 28px;
-      font-size: 18px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
-      background: linear-gradient(to bottom, #3498db, #2980b9);
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
       color: white;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      transition: all 0.25s;
+      box-shadow: 0 4px 10px rgba(30, 147, 196, 0.3);
+      transition: all 0.2s;
     }
 
     button:hover:not(:disabled) {
-      background: linear-gradient(to bottom, #2980b9, #2573a7);
       transform: translateY(-2px);
-      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 12px rgba(30, 147, 196, 0.4);
     }
 
     button:active:not(:disabled) {
@@ -210,11 +237,12 @@
     }
 
     .reset-btn {
-      background: linear-gradient(to bottom, #e74c3c, #c0392b);
+      background: linear-gradient(135deg, #ff5e5e 0%, #ff7676 100%);
+      box-shadow: 0 4px 10px rgba(255, 94, 94, 0.3);
     }
 
     .reset-btn:hover:not(:disabled) {
-      background: linear-gradient(to bottom, #c0392b, #a93226);
+      box-shadow: 0 6px 12px rgba(255, 94, 94, 0.4);
     }
 
     /* Блок результатов */
@@ -223,19 +251,19 @@
       text-align: center;
       padding: 20px;
       background-color: #f0f8f0;
-      border-radius: 10px;
-      margin-top: 20px;
+      border-radius: 16px;
+      margin-top: 10px;
       border: 1px solid #d5e8d5;
     }
 
     .score-display {
-      font-size: 22px;
+      font-size: 18px;
       margin: 12px 0;
       color: #27ae60;
     }
 
     .grade-display {
-      font-size: 36px;
+      font-size: 32px;
       font-weight: bold;
       color: #2ecc71;
       margin: 10px 0;
@@ -244,18 +272,18 @@
     #telegram-status {
       margin-top: 16px;
       padding: 12px;
-      border-radius: 6px;
+      border-radius: 10px;
       display: none;
     }
 
     .success {
-      background-color: #d4edda;
+      background-color: #e1f7e9;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
 
     .error {
-      background-color: #f8d7da;
+      background-color: #fde8e8;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
@@ -268,7 +296,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -283,73 +311,92 @@
       color: #333;
       border-radius: 20px;
       max-width: 90%;
-      width: 500px;
+      width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
     .fullscreen-content h2 {
-      font-size: 28px;
+      font-size: 24px;
       margin-bottom: 20px;
-      color: #2c3e50;
+      color: #1e93c4;
     }
 
     .fullscreen-grade {
-      font-size: 140px;
+      font-size: 80px;
       font-weight: bold;
       margin: 20px 0;
-      color: #2ecc71;
+      color: #1e93c4;
     }
 
     .fullscreen-btn {
-      margin-top: 30px;
-      padding: 14px 40px;
-      font-size: 20px;
+      margin-top: 20px;
+      padding: 14px 30px;
+      font-size: 18px;
+      width: 100%;
     }
 
     /* Адаптивность */
     @media (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
       .container {
-        padding: 16px;
-        margin: 10px;
+        margin: 10px auto;
+        border-radius: 12px;
       }
 
       h1 {
-        font-size: 24px;
-        padding: 14px;
+        font-size: 20px;
+        padding: 18px;
       }
 
-      .student-info {
-        flex-direction: column;
-        gap: 14px;
+      .section {
+        padding: 16px;
       }
 
       .question-text {
-        font-size: 18px;
+        font-size: 17px;
       }
 
       .option-label {
-        padding: 12px;
+        padding: 14px;
         font-size: 15px;
       }
 
-      .button-container {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      button {
-        width: 100%;
-        max-width: 300px;
-      }
-
       .fullscreen-grade {
-        font-size: 100px;
+        font-size: 70px;
       }
+      
+      .fullscreen-content {
+        width: 90%;
+        padding: 25px;
+      }
+    }
+
+    /* Специфические стили для Telegram-like интерфейса */
+    .telegram-header {
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .telegram-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Тест по теме: Рассеивание данных</h1>
+    <div class="telegram-header">
+      <h1>📊 Тест: Рассеивание данных</h1>
+    </div>
 
     <div class="section" id="student-info-section">
       <div class="section-title">Информация об ученике</div>
@@ -362,11 +409,11 @@
           <label for="student-class">Класс:</label>
           <select id="student-class">
             <option value="">Выберите класс</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
+            <option value="7">7 класс</option>
+            <option value="8">8 класс</option>
+            <option value="9">9 класс</option>
+            <option value="10">10 класс</option>
+            <option value="11">11 класс</option>
           </select>
         </div>
       </div>
@@ -409,6 +456,7 @@
     <div class="fullscreen-content">
       <h2>Ваш результат</h2>
       <div class="fullscreen-grade" id="fullscreen-grade">5</div>
+      <p style="margin: 15px 0; color: #666;">Правильных ответов: <span id="fullscreen-score">0</span> из 15</p>
       <button class="fullscreen-btn" id="finish-btn">Завершить</button>
     </div>
   </div>
@@ -429,9 +477,9 @@
     // Вопросы с ответами по теме "Рассеивание данных"
     const allQuestions = [
       { 
-        text: "Что характеризует меры рассеивания?", 
+        text: "Что характеризуют меры рассеивания данных?", 
         options: [
-          {t:"Расположение данных на числовой прямой", v:"wrong"},
+          {t:"Положение данных на числовой прямой", v:"wrong"},
           {t:"Отклонение значений массива от его центра", v:"correct"},
           {t:"Наибольшее и наименьшее значения в наборе", v:"wrong"},
           {t:"Количество данных в массиве", v:"wrong"}
@@ -447,7 +495,7 @@
         ] 
       },
       { 
-        text: "Какой серьёзный недостаток есть у размаха?", 
+        text: "Какой серьёзный недостаток есть у размаха как меры рассеивания?", 
         options: [
           {t:"Он всегда равен нулю", v:"wrong"},
           {t:"Он учитывает только два крайних значения", v:"correct"},
@@ -456,7 +504,7 @@
         ] 
       },
       { 
-        text: "Отклонение числа от среднего арифметического вычисляется как:", 
+        text: "Как вычисляется отклонение числа от среднего арифметического?", 
         options: [
           {t:"Разность между числом и медианой", v:"wrong"},
           {t:"Сумма числа и среднего", v:"wrong"},
@@ -519,12 +567,12 @@
         ] 
       },
       { 
-        text: "Какая из формул верна для дисперсии?", 
+        text: "Какая формула верна для дисперсии? (где x̄² означает среднее квадратов, а (x̄)² - квадрат среднего)", 
         options: [
-          {t:"S² = x̄² - x̄²", v:"correct"},
-          {t:"S² = x̄² + x̄²", v:"wrong"},
-          {t:"S² = x̄ - x̄²", v:"wrong"},
-          {t:"S² = x̄² / x̄", v:"wrong"}
+          {t:"S² = x̄² - (x̄)²", v:"correct"},
+          {t:"S² = (x̄)² - x̄²", v:"wrong"},
+          {t:"S² = x̄² + (x̄)²", v:"wrong"},
+          {t:"S² = x̄² / (x̄)²", v:"wrong"}
         ] 
       },
       { 
@@ -582,11 +630,11 @@
         ] 
       },
       { 
-        text: "Для набора данных: 2, 4, 6. Чему равна дисперсия?", 
+        text: "Для набора данных: 1, 3, 5. Чему равна дисперсия?", 
         options: [
           {t:"2", v:"wrong"},
-          {t:"4", v:"wrong"},
           {t:"8/3", v:"correct"},
+          {t:"4", v:"wrong"},
           {t:"0", v:"wrong"}
         ] 
       },
@@ -670,6 +718,33 @@
           {t:"Связь отрицательная", v:"wrong"},
           {t:"Данные недостоверны", v:"wrong"}
         ] 
+      },
+      { 
+        text: "Какой пример из учебника иллюстрирует большое рассеивание данных?", 
+        options: [
+          {t:"Время пути Сергея в школу", v:"wrong"},
+          {t:"Время пути Ивана в школу", v:"correct"},
+          {t:"Температура в приморских местностях", v:"wrong"},
+          {t:"Масса булок хлеба на исправной линии", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что характеризует континентальный климат по сравнению с морским?", 
+        options: [
+          {t:"Более низкая дисперсия температур", v:"wrong"},
+          {t:"Более высокая дисперсия температур", v:"correct"},
+          {t:"Более высокое среднее значение температур", v:"wrong"},
+          {t:"Более низкое среднее значение температур", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Как стандартное отклонение используется в контроле качества продукции?", 
+        options: [
+          {t:"Для определения средней массы изделия", v:"wrong"},
+          {t:"Для оценки рассеивания параметров готовой продукции", v:"correct"},
+          {t:"Для подсчёта количества бракованных изделий", v:"wrong"},
+          {t:"Для определения цвета продукции", v:"wrong"}
+        ] 
       }
     ];
 
@@ -688,17 +763,25 @@
     const studentClassSelect = document.getElementById('student-class');
     const fullscreenResult = document.getElementById('fullscreen-result');
     const fullscreenGrade = document.getElementById('fullscreen-grade');
+    const fullscreenScore = document.getElementById('fullscreen-score');
     const finishBtn = document.getElementById('finish-btn');
     const startTestBtn = document.getElementById('start-test-btn');
     const studentInfoSection = document.getElementById('student-info-section');
     const testContent = document.getElementById('test-content');
 
+    // Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
     // Инициализация теста
     function initTest() {
       // Перемешиваем вопросы и выбираем 15 случайных
-      shuffledQuestions = [...allQuestions]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 15);
+      shuffledQuestions = shuffleArray([...allQuestions]).slice(0, 15);
       
       currentQuestionIndex = 0;
       score = 0;
@@ -720,7 +803,7 @@
       questionText.textContent = question.text;
       
       // Перемешиваем варианты ответов для текущего вопроса
-      currentShuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+      currentShuffledOptions = shuffleArray([...question.options]);
       
       optionsContainer.innerHTML = '';
       currentShuffledOptions.forEach((option, i) => {
@@ -775,11 +858,6 @@
     function updateProgress() {
       const percent = (currentQuestionIndex / 15) * 100;
       progressBar.style.width = `${percent}%`;
-      
-      if (percent < 30) progressBar.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
-      else if (percent < 70) progressBar.style.background = 'linear-gradient(to right, #f39c12, #d35400)';
-      else progressBar.style.background = 'linear-gradient(to right, #3498db, #2980b9)';
-      
       progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из 15`;
     }
 
@@ -824,6 +902,7 @@
       
       // Показ полноэкранного результата
       fullscreenGrade.textContent = grade;
+      fullscreenScore.textContent = score;
       fullscreenResult.style.display = 'flex';
       
       // Обновление обычного блока результатов
