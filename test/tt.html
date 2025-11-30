@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тест: Случайные опыты и случайные события</title>
+  <style>
+    /* Общие стили в стиле Telegram */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: #333;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      padding: 20px;
+      margin-bottom: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .section {
+      padding: 20px;
+      border-bottom: 1px solid #e6e6e6;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      color: #1e93c4;
+      margin-bottom: 16px;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .section-title:before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: #1e93c4;
+      border-radius: 2px;
+      margin-right: 8px;
+    }
+
+    /* Информация об ученике */
+    .student-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .student-info label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .student-info input,
+    .student-info select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #f9f9f9;
+      transition: all 0.2s;
+    }
+
+    .student-info input:focus,
+    .student-info select:focus {
+      outline: none;
+      border-color: #1e93c4;
+      background: white;
+      box-shadow: 0 0 0 2px rgba(30, 147, 196, 0.2);
+    }
+
+    .start-test-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 16px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    /* Прогресс-бар */
+    .progress-container {
+      background-color: #e6e6e6;
+      border-radius: 10px;
+      height: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #1e93c4 0%, #38a1d6 100%);
+      transition: width 0.4s ease;
+      border-radius: 10px;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-weight: 500;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Вопрос */
+    .question-container {
+      padding: 10px 0;
+    }
+
+    .question-text {
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #222;
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+
+    .option-label:hover {
+      background-color: #eef7fd;
+      border-color: #1e93c4;
+    }
+
+    .option-label.selected {
+      background-color: #e1f2ff;
+      border-color: #1e93c4;
+      box-shadow: 0 2px 5px rgba(30, 147, 196, 0.2);
+    }
+
+    .option-label.correct {
+      background-color: #e1f7e9;
+      border-color: #34b86e;
+      box-shadow: 0 2px 5px rgba(52, 184, 110, 0.2);
+    }
+
+    .option-label.incorrect {
+      background-color: #fde8e8;
+      border-color: #f36;
+      box-shadow: 0 2px 5px rgba(255, 51, 102, 0.2);
+    }
+
+    .option-label input {
+      margin-right: 12px;
+      transform: scale(1.3);
+      accent-color: #1e93c4;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* Кнопки */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0 10px;
+    }
+
+    button {
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(30, 147, 196, 0.3);
+      transition: all 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(30, 147, 196, 0.4);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, #ff5e5e 0%, #ff7676 100%);
+      box-shadow: 0 4px 10px rgba(255, 94, 94, 0.3);
+    }
+
+    .reset-btn:hover:not(:disabled) {
+      box-shadow: 0 6px 12px rgba(255, 94, 94, 0.4);
+    }
+
+    /* Блок результатов */
+    #results {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background-color: #f0f8f0;
+      border-radius: 16px;
+      margin-top: 10px;
+      border: 1px solid #d5e8d5;
+    }
+
+    .score-display {
+      font-size: 18px;
+      margin: 12px 0;
+      color: #27ae60;
+    }
+
+    .grade-display {
+      font-size: 32px;
+      font-weight: bold;
+      color: #2ecc71;
+      margin: 10px 0;
+    }
+
+    #telegram-status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .success {
+      background-color: #e1f7e9;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error {
+      background-color: #fde8e8;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Полноэкранный результат */
+    #fullscreen-result {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+    }
+
+    .fullscreen-content {
+      text-align: center;
+      padding: 30px;
+      background: white;
+      color: #333;
+      border-radius: 20px;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .fullscreen-content h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #1e93c4;
+    }
+
+    .fullscreen-grade {
+      font-size: 80px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #1e93c4;
+    }
+
+    .fullscreen-btn {
+      margin-top: 20px;
+      padding: 14px 30px;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
+      .container {
+        margin: 10px auto;
+        border-radius: 12px;
+      }
+
+      h1 {
+        font-size: 20px;
+        padding: 18px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .question-text {
+        font-size: 17px;
+      }
+
+      .option-label {
+        padding: 14px;
+        font-size: 15px;
+      }
+
+      .fullscreen-grade {
+        font-size: 70px;
+      }
+      
+      .fullscreen-content {
+        width: 90%;
+        padding: 25px;
+      }
+    }
+
+    /* Специфические стили для Telegram-like интерфейса */
+    .telegram-header {
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-radius: 16px 16px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="telegram-header">
+      <h1>🎲 Тест: Случайные опыты и события</h1>
+    </div>
+
+    <div class="section" id="student-info-section">
+      <div class="section-title">Информация об ученике</div>
+      <div class="student-info">
+        <div>
+          <label for="student-name">Имя:</label>
+          <input type="text" id="student-name" placeholder="Введите ваше имя" />
+        </div>
+        <div>
+          <label for="student-class">Класс:</label>
+          <select id="student-class">
+            <option value="">Выберите класс</option>
+            <option value="7">7 класс</option>
+            <option value="8">8 класс</option>
+            <option value="9">9 класс</option>
+            <option value="10">10 класс</option>
+            <option value="11">11 класс</option>
+          </select>
+        </div>
+      </div>
+      <button class="start-test-btn" id="start-test-btn">Начать тест</button>
+    </div>
+
+    <div id="test-content" style="display: none;">
+      <div class="section">
+        <div class="section-title">Прогресс выполнения</div>
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Вопрос 0 из 15</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Вопрос</div>
+        <div class="question-container">
+          <div class="question-text" id="question-text"></div>
+          <div class="options-container" id="options-container"></div>
+          <button id="confirm-btn" disabled>Подтвердить ответ</button>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button class="reset-btn" id="reset-btn">Сбросить тест</button>
+      </div>
+
+      <div id="results">
+        <h2>Результаты теста</h2>
+        <div class="score-display">Правильных ответов: <span id="score-value">0</span> из 15</div>
+        <div class="grade-display">Оценка: <span id="grade-value">—</span></div>
+        <div id="telegram-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Полноэкранный результат -->
+  <div id="fullscreen-result">
+    <div class="fullscreen-content">
+      <h2>Ваш результат</h2>
+      <div class="fullscreen-grade" id="fullscreen-grade">5</div>
+      <p style="margin: 15px 0; color: #666;">Правильных ответов: <span id="fullscreen-score">0</span> из 15</p>
+      <button class="fullscreen-btn" id="finish-btn">Завершить</button>
+    </div>
+  </div>
+
+  <script>
+    // Глобальные переменные
+    const DEFAULT_BOT_TOKEN = "8344281396:AAGZ9-M2XRyPMHiI2akBSSIN7QAtRGDmLOY";
+    const DEFAULT_CHAT_ID = "1189539923";
+    
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = Array(15).fill(null);
+    let shuffledQuestions = [];
+    let isSubmitted = false;
+    let isShowingAnswer = false;
+    let currentShuffledOptions = [];
+
+    // Вопросы с ответами по теме "Случайные опыты и случайные события"
+    const allQuestions = [
+      { 
+        text: "Что такое случайный опыт (эксперимент)?", 
+        options: [
+          {t:"Условия и обстоятельства, в которых рассматриваются случайные события", v:"correct"},
+          {t:"Любое событие, которое происходит неожиданно", v:"wrong"},
+          {t:"Математический расчет вероятности", v:"wrong"},
+          {t:"Повторение одного и того же действия много раз", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какое из событий является случайным?", 
+        options: [
+          {t:"Смена времен года", v:"wrong"},
+          {t:"Выпадение орла при подбрасывании монеты", v:"correct"},
+          {t:"Восход солнца", v:"wrong"},
+          {t:"Таяние льда при нагревании", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое вероятность случайного события?", 
+        options: [
+          {t:"Количество благоприятных исходов", v:"wrong"},
+          {t:"Числовая мера правдоподобия события", v:"correct"},
+          {t:"Сумма всех возможных исходов", v:"wrong"},
+          {t:"Отношение времени наступления события к общему времени", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Чему равна вероятность невозможного события?", 
+        options: [
+          {t:"0", v:"correct"},
+          {t:"1", v:"wrong"},
+          {t:"0.5", v:"wrong"},
+          {t:"-1", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Чему равна вероятность достоверного события?", 
+        options: [
+          {t:"0", v:"wrong"},
+          {t:"1", v:"correct"},
+          {t:"0.5", v:"wrong"},
+          {t:"Зависит от условий", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое частота случайного события?", 
+        options: [
+          {t:"Вероятность события", v:"wrong"},
+          {t:"Отношение числа опытов, в которых событие произошло, к общему числу опытов", v:"correct"},
+          {t:"Сумма всех исходов", v:"wrong"},
+          {t:"Разность между наибольшим и наименьшим значением", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Как связаны частота и вероятность события?", 
+        options: [
+          {t:"Частота всегда равна вероятности", v:"wrong"},
+          {t:"При большом числе опытов частота близка к вероятности", v:"correct"},
+          {t:"Вероятность всегда больше частоты", v:"wrong"},
+          {t:"Частота всегда больше вероятности", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Сколько элементарных исходов у опыта с бросанием симметричной монеты?", 
+        options: [
+          {t:"1", v:"wrong"},
+          {t:"2", v:"correct"},
+          {t:"6", v:"wrong"},
+          {t:"Зависит от способа броска", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Сколько элементарных исходов у опыта с бросанием игрального кубика?", 
+        options: [
+          {t:"2", v:"wrong"},
+          {t:"6", v:"correct"},
+          {t:"12", v:"wrong"},
+          {t:"36", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какова вероятность выпадения орла при бросании симметричной монеты?", 
+        options: [
+          {t:"0", v:"wrong"},
+          {t:"0.25", v:"wrong"},
+          {t:"0.5", v:"correct"},
+          {t:"1", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какова вероятность выпадения шестерки на правильном игральном кубике?", 
+        options: [
+          {t:"1/2", v:"wrong"},
+          {t:"1/6", v:"correct"},
+          {t:"1/36", v:"wrong"},
+          {t:"6", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое принцип практической невозможности?", 
+        options: [
+          {t:"Маловероятные события при однократном опыте считаются невозможными", v:"correct"},
+          {t:"Все события рано или поздно происходят", v:"wrong"},
+          {t:"Вероятность не может быть равна нулю", v:"wrong"},
+          {t:"Частота всегда стремится к вероятности", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Для чего используется двойной ввод пароля на сайтах?", 
+        options: [
+          {t:"Для увеличения безопасности от хакеров", v:"wrong"},
+          {t:"Для защиты от случайных ошибок при вводе", v:"correct"},
+          {t:"Для запоминания пароля", v:"wrong"},
+          {t:"Для увеличения времени регистрации", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое контрольная цифра в номере банковской карты?", 
+        options: [
+          {t:"Первая цифра номера", v:"wrong"},
+          {t:"Цифра, позволяющая проверить корректность номера", v:"correct"},
+          {t:"Секретный код карты", v:"wrong"},
+          {t:"Дата выпуска карты", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какое событие является достоверным при бросании игрального кубика?", 
+        options: [
+          {t:"Выпадение 7 очков", v:"wrong"},
+          {t:"Выпадение числа от 1 до 6", v:"correct"},
+          {t:"Выпадение только четных чисел", v:"wrong"},
+          {t:"Выпадение числа больше 3", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какое событие является невозможным при бросании игрального кубика?", 
+        options: [
+          {t:"Выпадение 1 очка", v:"wrong"},
+          {t:"Выпадение 7 очков", v:"correct"},
+          {t:"Выпадение 6 очков", v:"wrong"},
+          {t:"Выпадение нечетного числа", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Как называется сторона монеты с изображением герба?", 
+        options: [
+          {t:"Решка", v:"wrong"},
+          {t:"Орел", v:"correct"},
+          {t:"Аверс", v:"wrong"},
+          {t:"Реверс", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Как называется обратная сторона монеты?", 
+        options: [
+          {t:"Орел", v:"wrong"},
+          {t:"Решка", v:"correct"},
+          {t:"Аверс", v:"wrong"},
+          {t:"Номинал", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Сколько исходов возможно при двукратном бросании монеты?", 
+        options: [
+          {t:"2", v:"wrong"},
+          {t:"3", v:"wrong"},
+          {t:"4", v:"correct"},
+          {t:"6", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Сколько исходов возможно при двукратном бросании игрального кубика?", 
+        options: [
+          {t:"6", v:"wrong"},
+          {t:"12", v:"wrong"},
+          {t:"36", v:"correct"},
+          {t:"216", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое избыточность информации?", 
+        options: [
+          {t:"Лишняя информация, которую нужно удалить", v:"wrong"},
+          {t:"Дополнительная информация для проверки корректности", v:"correct"},
+          {t:"Информация с ошибками", v:"wrong"},
+          {t:"Случайная информация", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Почему естественные языки обладают избыточностью?", 
+        options: [
+          {t:"Чтобы тексты были длиннее", v:"wrong"},
+          {t:"Для защиты от ошибок и опечаток", v:"correct"},
+          {t:"Потому что так исторически сложилось", v:"wrong"},
+          {t:"Чтобы усложнить изучение языка", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какой пример маловероятного события приведен в учебнике?", 
+        options: [
+          {t:"Выпадение орла 10 раз подряд", v:"correct"},
+          {t:"Выпадение решки один раз", v:"wrong"},
+          {t:"Бросок игрального кубика", v:"wrong"},
+          {t:"Измерение температуры", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что означает вероятность события 0,25?", 
+        options: [
+          {t:"Событие произойдет точно 25 раз из 100", v:"wrong"},
+          {t:"Событие произойдет примерно в 25 случаях из 100", v:"correct"},
+          {t:"Событие невозможно", v:"wrong"},
+          {t:"Событие достоверно", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Для чего используется теория вероятностей в страховании?", 
+        options: [
+          {t:"Для расчета страховых взносов на основе вероятностей событий", v:"correct"},
+          {t:"Для определения цвета страховых полисов", v:"wrong"},
+          {t:"Для составления рекламных текстов", v:"wrong"},
+          {t:"Для выбора названия страховой компании", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что такое 'математическая монета' в теории вероятностей?", 
+        options: [
+          {t:"Реальная монета из драгоценного металла", v:"wrong"},
+          {t:"Идеализированный объект без физических свойств", v:"correct"},
+          {t:"Монета с двумя орлами", v:"wrong"},
+          {t:"Древняя монета для коллекционирования", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какая сумма очков на противоположных гранях правильного игрального кубика?", 
+        options: [
+          {t:"5", v:"wrong"},
+          {t:"6", v:"wrong"},
+          {t:"7", v:"correct"},
+          {t:"8", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Почему при игре в кости сумма противоположных граней равна 7?", 
+        options: [
+          {t:"Это магическое число", v:"wrong"},
+          {t:"Для удобства запоминания", v:"wrong"},
+          {t:"Чтобы затруднить жульничество", v:"correct"},
+          {t:"Так исторически сложилось", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Что означает 'статистическая устойчивость'?", 
+        options: [
+          {t:"Частота события не меняется со временем", v:"wrong"},
+          {t:"При многократном повторении частота близка к вероятности", v:"correct"},
+          {t:"Событие происходит регулярно", v:"wrong"},
+          {t:"Вероятность равна 1", v:"wrong"}
+        ] 
+      },
+      { 
+        text: "Какой из примеров НЕ является случайным экспериментом?", 
+        options: [
+          {t:"Бросок игрального кубика", v:"wrong"},
+          {t:"Подбрасывание монеты", v:"wrong"},
+          {t:"Измерение роста человека", v:"wrong"},
+          {t:"Смена времен года", v:"correct"}
+        ] 
+      }
+    ];
+
+    // Кэшируем DOM
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultsDiv = document.getElementById('results');
+    const scoreValue = document.getElementById('score-value');
+    const gradeValue = document.getElementById('grade-value');
+    const telegramStatus = document.getElementById('telegram-status');
+    const studentNameInput = document.getElementById('student-name');
+    const studentClassSelect = document.getElementById('student-class');
+    const fullscreenResult = document.getElementById('fullscreen-result');
+    const fullscreenGrade = document.getElementById('fullscreen-grade');
+    const fullscreenScore = document.getElementById('fullscreen-score');
+    const finishBtn = document.getElementById('finish-btn');
+    const startTestBtn = document.getElementById('start-test-btn');
+    const studentInfoSection = document.getElementById('student-info-section');
+    const testContent = document.getElementById('test-content');
+
+    // Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Инициализация теста
+    function initTest() {
+      // Перемешиваем вопросы и выбираем 15 случайных
+      shuffledQuestions = shuffleArray([...allQuestions]).slice(0, 15);
+      
+      currentQuestionIndex = 0;
+      score = 0;
+      userAnswers = Array(15).fill(null);
+      isSubmitted = false;
+      isShowingAnswer = false;
+      currentShuffledOptions = [];
+      
+      confirmBtn.disabled = false;
+      resultsDiv.style.display = 'none';
+      fullscreenResult.style.display = 'none';
+      
+      showQuestion(0);
+    }
+
+    // Показать вопрос
+    function showQuestion(index) {
+      const question = shuffledQuestions[index];
+      questionText.textContent = question.text;
+      
+      // Перемешиваем варианты ответов для текущего вопроса
+      currentShuffledOptions = shuffleArray([...question.options]);
+      
+      optionsContainer.innerHTML = '';
+      currentShuffledOptions.forEach((option, i) => {
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        if (userAnswers[index] === option.v) {
+          label.classList.add('selected');
+        }
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'option';
+        radio.value = option.v;
+        radio.disabled = isShowingAnswer; // Блокируем выбор во время показа ответа
+        
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(option.t));
+        
+        if (!isShowingAnswer) {
+          label.addEventListener('click', () => {
+            document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+            label.classList.add('selected');
+            radio.checked = true;
+            confirmBtn.disabled = false;
+          });
+        }
+        
+        optionsContainer.appendChild(label);
+      });
+      
+      updateProgress();
+    }
+
+    // Подсветка правильного ответа
+    function highlightCorrectAnswer() {
+      const options = optionsContainer.querySelectorAll('.option-label');
+      
+      options.forEach((option, index) => {
+        const radio = option.querySelector('input');
+        if (currentShuffledOptions[index].v === 'correct') {
+          option.classList.add('correct');
+        } else if (radio.checked && currentShuffledOptions[index].v === 'wrong') {
+          option.classList.add('incorrect');
+        }
+        
+        // Блокируем все радиокнопки
+        radio.disabled = true;
+      });
+    }
+
+    // Обновление прогресса
+    function updateProgress() {
+      const percent = (currentQuestionIndex / 15) * 100;
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из 15`;
+    }
+
+    // Подтверждение ответа
+    function confirmAnswer() {
+      const selectedOption = document.querySelector('input[name="option"]:checked');
+      if (!selectedOption) {
+        alert('Выберите вариант ответа');
+        return;
+      }
+      
+      // Сохраняем ответ
+      userAnswers[currentQuestionIndex] = selectedOption.value;
+      
+      // Блокируем кнопку подтверждения
+      confirmBtn.disabled = true;
+      isShowingAnswer = true;
+      
+      // Подсвечиваем правильный ответ
+      highlightCorrectAnswer();
+      
+      // Ждем 2 секунды и переходим к следующему вопросу
+      setTimeout(() => {
+        isShowingAnswer = false;
+        
+        // Переходим к следующему вопросу или завершаем тест
+        if (currentQuestionIndex < 14) {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          confirmBtn.disabled = true;
+        } else {
+          finishTest();
+        }
+      }, 2000);
+    }
+
+    // Завершение теста
+    function finishTest() {
+      // Подсчет результатов
+      score = userAnswers.filter(answer => answer === 'correct').length;
+      const grade = getGrade(score);
+      
+      // Показ полноэкранного результата
+      fullscreenGrade.textContent = grade;
+      fullscreenScore.textContent = score;
+      fullscreenResult.style.display = 'flex';
+      
+      // Обновление обычного блока результатов
+      scoreValue.textContent = score;
+      gradeValue.textContent = grade;
+      
+      // Отправка в Telegram
+      sendResultsToTelegram(score, grade);
+    }
+
+    // Получение оценки по баллам
+    function getGrade(score) {
+      if (score >= 13) return 5;
+      if (score >= 10) return 4;
+      if (score >= 7) return 3;
+      return 2;
+    }
+
+    // Отправка в Telegram
+    async function sendTelegramMessage(botToken, chatId, text) {
+      const resp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.description);
+    }
+
+    // Отправка результатов
+    async function sendResultsToTelegram(score, grade) {
+      if (isSubmitted) return;
+      
+      const name = studentNameInput.value.trim();
+      const klass = studentClassSelect.value;
+      
+      if (!name || !klass) {
+        console.log('Имя или класс не заполнены, пропускаем отправку в Telegram');
+        return;
+      }
+      
+      try {
+        const now = new Date().toLocaleString('ru-RU');
+        const answers = [];
+        
+        for (let i = 0; i < 15; i++) {
+          const isCorrect = userAnswers[i] === 'correct';
+          answers.push(`${i + 1}. ${isCorrect ? '✅ Правильно' : '❌ Неправильно'}`);
+        }
+        
+        const msg = `🎲 Результаты теста "Случайные опыты и события":
+
+👤 Студент: ${name}
+🏫 Класс: ${klass}
+🎯 Баллы: ${score}/15 (${score}/15 правильных ответов)
+📝 Оценка: ${grade}
+
+Детали ответов:
+${answers.join('\n')}
+
+📅 Дата: ${now}`;
+        
+        await sendTelegramMessage(DEFAULT_BOT_TOKEN, DEFAULT_CHAT_ID, msg);
+        console.log('Результаты отправлены в Telegram');
+      } catch (err) {
+        console.error('Ошибка отправки в Telegram:', err);
+      }
+      
+      isSubmitted = true;
+    }
+
+    // Завершение полноэкранного режима
+    function finishFullScreen() {
+      fullscreenResult.style.display = 'none';
+      resultsDiv.style.display = 'block';
+      
+      // Показ статуса
+      telegramStatus.textContent = 'Результаты отправлены в Telegram!';
+      telegramStatus.className = 'success';
+      telegramStatus.style.display = 'block';
+      
+      setTimeout(() => {
+        telegramStatus.style.display = 'none';
+        // Переадресация на index.html после задержки
+        window.location.href = "../index.html";
+      }, 5000);
+    }
+
+    // Сброс теста
+    function resetAll() {
+      if (!confirm('Сбросить весь тест? Весь прогресс будет потерян.')) return;
+      
+      // Показываем снова блок с информацией об ученике
+      studentInfoSection.style.display = 'block';
+      testContent.style.display = 'none';
+      
+      // Сбрасываем поля
+      studentNameInput.value = '';
+      studentClassSelect.value = '';
+    }
+
+    // Валидация формы
+    function validateForm() {
+      const name = studentNameInput.value.trim();
+      const klass = studentClassSelect.value;
+      if (!name) { alert('Введите имя'); return false; }
+      if (!klass) { alert('Выберите класс'); return false; }
+      return true;
+    }
+
+    // Начало теста
+    function startTest() {
+      if (!validateForm()) return;
+      
+      // Скрываем блок с информацией об ученике
+      studentInfoSection.style.display = 'none';
+      // Показываем блок с тестом
+      testContent.style.display = 'block';
+      
+      // Инициализируем тест
+      initTest();
+    }
+
+    // Инициализация
+    window.onload = function () {
+      // Назначаем обработчики
+      startTestBtn.addEventListener('click', startTest);
+      confirmBtn.addEventListener('click', confirmAnswer);
+      resetBtn.addEventListener('click', resetAll);
+      finishBtn.addEventListener('click', finishFullScreen);
+      
+      // Закрытие по Esc
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fullscreenResult.style.display === 'flex') {
+          finishFullScreen();
+        }
+      });
+    };
+  </script>
+</body>
+</html>
