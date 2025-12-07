@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Тест по теме: Описательная статистика</title>
   <style>
-    /* Общие стили в стиле Telegram */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -68,7 +67,6 @@
       margin-right: 8px;
     }
 
-    /* Информация об ученике */
     .student-info {
       display: flex;
       flex-direction: column;
@@ -109,7 +107,6 @@
       font-weight: 600;
     }
 
-    /* Прогресс-бар */
     .progress-container {
       background-color: #e6e6e6;
       border-radius: 10px;
@@ -133,7 +130,6 @@
       color: #666;
     }
 
-    /* Вопрос */
     .question-container {
       padding: 10px 0;
     }
@@ -194,13 +190,6 @@
       accent-color: #1e93c4;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-
-    /* Кнопки */
     .button-container {
       display: flex;
       justify-content: center;
@@ -245,7 +234,6 @@
       box-shadow: 0 6px 12px rgba(255, 94, 94, 0.4);
     }
 
-    /* Блок результатов */
     #results {
       display: none;
       text-align: center;
@@ -288,7 +276,6 @@
       border: 1px solid #f5c6cb;
     }
 
-    /* Полноэкранный результат */
     #fullscreen-result {
       display: none;
       position: fixed;
@@ -335,7 +322,6 @@
       width: 100%;
     }
 
-    /* Адаптивность */
     @media (max-width: 768px) {
       body {
         padding: 5px;
@@ -374,21 +360,12 @@
       }
     }
 
-    /* Специфические стили для Telegram-like интерфейса */
     .telegram-header {
       background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
       color: white;
       padding: 16px;
       text-align: center;
       border-radius: 16px 16px 0 0;
-    }
-    
-    .telegram-card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 10px 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
   </style>
 </head>
@@ -451,7 +428,6 @@
     </div>
   </div>
 
-  <!-- Полноэкранный результат -->
   <div id="fullscreen-result">
     <div class="fullscreen-content">
       <h2>Ваш результат</h2>
@@ -474,7 +450,7 @@
     let isShowingAnswer = false;
     let currentShuffledOptions = [];
 
-    // Вопросы с ответами по теме "Описательная статистика" (среднее, медиана, размах)
+    // Вопросы по описательной статистике
     const allQuestions = [
       { 
         text: "Что такое среднее арифметическое набора чисел?", 
@@ -769,7 +745,7 @@
     const studentInfoSection = document.getElementById('student-info-section');
     const testContent = document.getElementById('test-content');
 
-    // Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+    // Функция для перемешивания массива
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -780,7 +756,6 @@
 
     // Инициализация теста
     function initTest() {
-      // Перемешиваем вопросы и выбираем 15 случайных
       shuffledQuestions = shuffleArray([...allQuestions]).slice(0, 15);
       
       currentQuestionIndex = 0;
@@ -802,7 +777,6 @@
       const question = shuffledQuestions[index];
       questionText.textContent = question.text;
       
-      // Перемешиваем варианты ответов для текущего вопроса
       currentShuffledOptions = shuffleArray([...question.options]);
       
       optionsContainer.innerHTML = '';
@@ -817,7 +791,7 @@
         radio.type = 'radio';
         radio.name = 'option';
         radio.value = option.v;
-        radio.disabled = isShowingAnswer; // Блокируем выбор во время показа ответа
+        radio.disabled = isShowingAnswer;
         
         label.appendChild(radio);
         label.appendChild(document.createTextNode(option.t));
@@ -849,7 +823,6 @@
           option.classList.add('incorrect');
         }
         
-        // Блокируем все радиокнопки
         radio.disabled = true;
       });
     }
@@ -869,21 +842,16 @@
         return;
       }
       
-      // Сохраняем ответ
       userAnswers[currentQuestionIndex] = selectedOption.value;
       
-      // Блокируем кнопку подтверждения
       confirmBtn.disabled = true;
       isShowingAnswer = true;
       
-      // Подсвечиваем правильный ответ
       highlightCorrectAnswer();
       
-      // Ждем 2 секунды и переходим к следующему вопросу
       setTimeout(() => {
         isShowingAnswer = false;
         
-        // Переходим к следующему вопросу или завершаем тест
         if (currentQuestionIndex < 14) {
           currentQuestionIndex++;
           showQuestion(currentQuestionIndex);
@@ -896,20 +864,16 @@
 
     // Завершение теста
     function finishTest() {
-      // Подсчет результатов
       score = userAnswers.filter(answer => answer === 'correct').length;
       const grade = getGrade(score);
       
-      // Показ полноэкранного результата
       fullscreenGrade.textContent = grade;
       fullscreenScore.textContent = score;
       fullscreenResult.style.display = 'flex';
       
-      // Обновление обычного блока результатов
       scoreValue.textContent = score;
       gradeValue.textContent = grade;
       
-      // Отправка в Telegram
       sendResultsToTelegram(score, grade);
     }
 
@@ -921,9 +885,9 @@
       return 2;
     }
 
-    // Отправка в Telegram
+    // Отправка в Telegram - ТОЧНО КАК В РАБОЧЕМ КОДЕ
     async function sendTelegramMessage(botToken, chatId, text) {
-      const resp = await fetch(`https://api.telegram.org/bot  ${botToken}/sendMessage`, {
+      const resp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
@@ -933,7 +897,7 @@
       if (!data.ok) throw new Error(data.description);
     }
 
-    // Отправка результатов
+    // Отправка результатов - ТОЧНО КАК В РАБОЧЕМ КОДЕ
     async function sendResultsToTelegram(score, grade) {
       if (isSubmitted) return;
       
@@ -980,14 +944,12 @@ ${answers.join('\n')}
       fullscreenResult.style.display = 'none';
       resultsDiv.style.display = 'block';
       
-      // Показ статуса
       telegramStatus.textContent = 'Результаты отправлены в Telegram!';
       telegramStatus.className = 'success';
       telegramStatus.style.display = 'block';
       
       setTimeout(() => {
         telegramStatus.style.display = 'none';
-        // Переадресация на index.html после задержки
         window.location.href = "../index.html";
       }, 5000);
     }
@@ -996,11 +958,9 @@ ${answers.join('\n')}
     function resetAll() {
       if (!confirm('Сбросить весь тест? Весь прогресс будет потерян.')) return;
       
-      // Показываем снова блок с информацией об ученике
       studentInfoSection.style.display = 'block';
       testContent.style.display = 'none';
       
-      // Сбрасываем поля
       studentNameInput.value = '';
       studentClassSelect.value = '';
     }
@@ -1018,24 +978,19 @@ ${answers.join('\n')}
     function startTest() {
       if (!validateForm()) return;
       
-      // Скрываем блок с информацией об ученике
       studentInfoSection.style.display = 'none';
-      // Показываем блок с тестом
       testContent.style.display = 'block';
       
-      // Инициализируем тест
       initTest();
     }
 
     // Инициализация
     window.onload = function () {
-      // Назначаем обработчики
       startTestBtn.addEventListener('click', startTest);
       confirmBtn.addEventListener('click', confirmAnswer);
       resetBtn.addEventListener('click', resetAll);
       finishBtn.addEventListener('click', finishFullScreen);
       
-      // Закрытие по Esc
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && fullscreenResult.style.display === 'flex') {
           finishFullScreen();
