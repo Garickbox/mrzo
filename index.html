@@ -1,637 +1,227 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Тестирование - Высоковская школа 25</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-        
-        :root {
-            --tg-blue: #3390ec;
-            --tg-blue-hover: #2b7fd8;
-            --tg-light-blue: #e8f4ff;
-            --tg-bg: #f5f5f5;
-            --tg-white: #ffffff;
-            --tg-gray: #8e8e93;
-            --tg-light-gray: #f2f2f7;
-            --tg-dark-text: #000000;
-            --tg-border: #e1e1e1;
-            --tg-green: #34c759;
-            --tg-red: #ff3b30;
-            --tg-yellow: #ffcc00;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
         body {
-            background-color: var(--tg-bg);
-            color: var(--tg-dark-text);
-            line-height: 1.4;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        
-        /* Шапка в стиле Telegram */
-        .header {
-            background-color: var(--tg-blue);
-            color: white;
-            padding: 15px 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-content {
+            color: #333;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .school-logo {
-            width: 40px;
-            height: 40px;
-            background-color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: var(--tg-blue);
-            font-size: 18px;
+            align-items: center;
         }
         
-        .header-text h1 {
-            font-size: 18px;
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .school-name {
+            font-size: 24px;
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 5px;
         }
         
-        .header-text p {
-            font-size: 14px;
+        .school-subtitle {
+            font-size: 16px;
             opacity: 0.9;
         }
         
-        .header-right {
-            display: flex;
-            gap: 12px;
+        .content {
+            padding: 40px 30px;
         }
         
-        .header-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
         }
         
-        .header-icon:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #4b6cb7;
+            margin-bottom: 20px;
         }
         
-        /* Основной контент */
-        .main-content {
-            padding: 16px;
-            max-width: 800px;
-            margin: 0 auto;
+        .welcome-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
         }
         
-        /* Карточка в стиле Telegram */
-        .tg-card {
-            background-color: var(--tg-white);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 16px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #4b6cb7;
         }
         
-        .tg-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--tg-border);
+        .test-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #4b6cb7;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .card-header i {
-            color: var(--tg-blue);
-            font-size: 20px;
-        }
-        
-        .card-title {
-            font-size: 17px;
-            font-weight: 600;
-        }
-        
-        .card-body {
-            padding: 16px;
-        }
-        
-        /* Форма для поиска теста */
-        .test-search-form {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .input-wrapper {
-            flex: 1;
-            position: relative;
+        .test-title i {
+            color: #34c759;
         }
         
         .test-input {
             width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--tg-border);
+            padding: 15px;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 16px;
-            background-color: var(--tg-light-gray);
-            transition: border-color 0.2s;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
         }
         
         .test-input:focus {
             outline: none;
-            border-color: var(--tg-blue);
+            border-color: #4b6cb7;
         }
         
-        .test-input::placeholder {
-            color: var(--tg-gray);
-        }
-        
-        .tg-button {
-            background-color: var(--tg-blue);
+        .open-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            padding: 0 20px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-            white-space: nowrap;
-            min-width: 100px;
-        }
-        
-        .tg-button:hover {
-            background-color: var(--tg-blue-hover);
-        }
-        
-        .tg-button:active {
-            transform: scale(0.98);
-        }
-        
-        .tg-button:disabled {
-            background-color: var(--tg-gray);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        /* Сообщения */
-        .message {
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-top: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 15px;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .message-success {
-            background-color: rgba(52, 199, 89, 0.1);
-            color: var(--tg-green);
-            border-left: 4px solid var(--tg-green);
-        }
-        
-        .message-error {
-            background-color: rgba(255, 59, 48, 0.1);
-            color: var(--tg-red);
-            border-left: 4px solid var(--tg-red);
-        }
-        
-        .message-info {
-            background-color: rgba(0, 122, 255, 0.1);
-            color: var(--tg-blue);
-            border-left: 4px solid var(--tg-blue);
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Индикатор загрузки */
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Робот КуМир */
-        .kumir-section {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            background-color: var(--tg-white);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .kumir-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--tg-dark-text);
-        }
-        
-        .kumir-robot {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 16px;
             cursor: pointer;
-            transition: transform 0.3s;
-            position: relative;
-        }
-        
-        .kumir-robot:hover {
-            transform: scale(1.05);
-        }
-        
-        .kumir-robot:active {
-            transform: scale(0.95);
-        }
-        
-        .robot-head {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);
-            border-radius: 40% 40% 45% 45%;
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
-        }
-        
-        .robot-eyes {
-            position: absolute;
-            top: 35px;
-            width: 100%;
+            transition: transform 0.2s;
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 30px;
+            gap: 10px;
         }
         
-        .eye {
-            width: 22px;
-            height: 22px;
-            background-color: white;
-            border-radius: 50%;
-            position: relative;
+        .open-button:hover {
+            transform: translateY(-2px);
         }
         
-        .eye::after {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            width: 12px;
-            height: 12px;
-            background-color: #333;
-            border-radius: 50%;
+        .open-button:active {
+            transform: translateY(0);
         }
         
-        .robot-mouth {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 10px;
-            background-color: white;
-            border-radius: 5px;
-        }
-        
-        .robot-antenna {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 25px;
-            background-color: #2c5aa0;
-            border-radius: 4px;
-        }
-        
-        .robot-antenna::after {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -6px;
-            width: 20px;
-            height: 20px;
-            background-color: #ffcc00;
-            border-radius: 50%;
-        }
-        
-        .kumir-label {
-            display: inline-block;
-            background-color: var(--tg-blue);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 500;
-            margin-top: 12px;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-            cursor: pointer;
-        }
-        
-        /* Подвал */
-        .footer {
-            padding: 20px 16px;
-            text-align: center;
-            color: var(--tg-gray);
+        .kumir-note {
+            margin-top: 15px;
             font-size: 14px;
-            margin-top: 30px;
-            border-top: 1px solid var(--tg-border);
+            color: #666;
+            text-align: center;
+            padding: 10px;
+            background: #e8f4ff;
+            border-radius: 8px;
+            border-left: 4px solid #4b6cb7;
         }
         
-        /* Адаптивность для мобильных */
-        @media (max-width: 768px) {
-            .test-search-form {
-                flex-direction: column;
-            }
-            
-            .tg-button {
-                padding: 14px 16px;
-                width: 100%;
-            }
-            
-            .header-text h1 {
-                font-size: 16px;
-            }
-            
-            .header-text p {
-                font-size: 13px;
-            }
-            
-            .kumir-section {
-                margin-top: 30px;
-                padding: 16px;
-            }
+        .kumir-note i {
+            color: #4b6cb7;
         }
         
         @media (max-width: 480px) {
-            .main-content {
-                padding: 12px;
+            body {
+                padding: 10px;
             }
             
-            .kumir-robot {
-                width: 130px;
-                height: 130px;
+            .container {
+                border-radius: 15px;
             }
             
-            .robot-head {
-                width: 100px;
-                height: 100px;
-            }
-        }
-        
-        /* Анимации */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Стили для темной темы */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --tg-bg: #0f0f0f;
-                --tg-white: #1c1c1e;
-                --tg-light-gray: #2c2c2e;
-                --tg-dark-text: #ffffff;
-                --tg-border: #38383a;
-                --tg-light-blue: #1a2c3d;
+            .header {
+                padding: 25px 20px;
             }
             
-            .robot-head {
-                background: linear-gradient(135deg, #5a9de9 0%, #3a6bb8 100%);
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .welcome-title {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Шапка в стиле Telegram -->
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="school-logo">В25</div>
-                <div class="header-text">
-                    <h1>Высоковская школа №25</h1>
-                    <p>Добро пожаловать на платформу тестирования!</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="header-icon" onclick="showInfo()">
-                    <i class="fas fa-info-circle"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Основной контент -->
-    <div class="main-content">
-        <!-- Приветственная карточка -->
-        <div class="tg-card">
-            <div class="card-header">
-                <i class="fas fa-graduation-cap"></i>
-                <div class="card-title">Привет, ученик!</div>
-            </div>
-            <div class="card-body">
-                <p>Добро пожаловать на платформу тестирования Высоковской школы №25! Здесь ты можешь пройти учебные тесты по различным предметам.</p>
-                <p style="margin-top: 10px; color: var(--tg-blue); font-weight: 500;"><i class="fas fa-lightbulb"></i> Введи название теста ниже и нажми "Открыть"</p>
-            </div>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <div class="school-name">ВЫСОКОВСКАЯ ШКОЛА №25</div>
+            <div class="school-subtitle">Платформа для тестирования учеников</div>
         </div>
         
-        <!-- Поиск теста -->
-        <div class="tg-card">
-            <div class="card-header">
-                <i class="fas fa-search"></i>
-                <div class="card-title">Найти тест</div>
-            </div>
-            <div class="card-body">
-                <p>Введи название теста (например: "KyMir", "test123"):</p>
-                
-                <div class="test-search-form">
-                    <div class="input-wrapper">
-                        <input type="text" class="test-input" id="testName" placeholder="Введите название теста..." autocomplete="off">
-                    </div>
-                    <button class="tg-button" id="openButton" onclick="openTest()">
-                        <i class="fas fa-external-link-alt"></i> Открыть
-                    </button>
-                </div>
-                
-                <!-- Сообщения будут появляться здесь -->
-                <div id="messageContainer"></div>
-            </div>
-        </div>
-        
-        <!-- Робот КуМир -->
-        <div class="kumir-section">
-            <div class="kumir-title">Программирование в КуМире</div>
-            <div class="kumir-robot pulse" onclick="openKumir()">
-                <div class="robot-antenna"></div>
-                <div class="robot-head">
-                    <div class="robot-eyes">
-                        <div class="eye"></div>
-                        <div class="eye"></div>
-                    </div>
-                    <div class="robot-mouth"></div>
+        <!-- Контент -->
+        <div class="content">
+            <!-- Приветствие -->
+            <div class="welcome-section">
+                <div class="welcome-title">Добро пожаловать!</div>
+                <div class="welcome-text">
+                    Приветствуем вас на платформе тестирования Высоковской школы №25! 
+                    Эта платформа создана для проверки знаний наших учеников.
                 </div>
             </div>
-            <div class="kumir-label" onclick="openKumir()">
-                <i class="fas fa-robot"></i> Открыть КуМир
+            
+            <!-- Форма теста -->
+            <div class="test-section">
+                <div class="test-title">
+                    <i class="fas fa-rocket"></i> Открыть тест
+                </div>
+                
+                <p style="margin-bottom: 15px; color: #555;">
+                    Введите название теста (например: "matematika", "russkiy", "istoriya"):
+                </p>
+                
+                <input type="text" class="test-input" id="testName" 
+                       placeholder="Введите название теста...">
+                
+                <button class="open-button" onclick="openTest()">
+                    <i class="fas fa-external-link-alt"></i> Открыть
+                </button>
+                
+                <div class="kumir-note">
+                    <i class="fas fa-info-circle"></i> 
+                    Если оставить поле пустым, откроется тест по программированию КуМир
+                </div>
             </div>
-            <p style="margin-top: 12px; color: var(--tg-gray); font-size: 14px;">Нажми на робота или на надпись, чтобы открыть задания по программированию</p>
         </div>
-    </div>
-    
-    <!-- Подвал -->
-    <div class="footer">
-        <p>Высоковская средняя школа №25 • Платформа тестирования</p>
-        <p style="margin-top: 5px; font-size: 13px;">© 2023 Все тесты предназначены для учебных целей</p>
     </div>
 
     <script>
-        // DOM элементы
-        const testInput = document.getElementById('testName');
-        const openButton = document.getElementById('openButton');
-        const messageContainer = document.getElementById('messageContainer');
-        
-        // Список часто используемых тестов для автодополнения
-        const commonTests = [
-            "index", "ftest7", "ftesttokv2", "kymir", "test2", 
-            "teststat", "testtestt", "tt", "matematika", "russkiy"
-        ];
-        
-        // Показать сообщение
-        function showMessage(text, type = 'info') {
-            // Удаляем предыдущие сообщения
-            messageContainer.innerHTML = '';
-            
-            // Создаем новое сообщение
-            const message = document.createElement('div');
-            message.className = `message message-${type}`;
-            message.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                <span>${text}</span>
-            `;
-            
-            messageContainer.appendChild(message);
-            
-            // Автоматически скрываем сообщение через 5 секунд (кроме ошибок)
-            if (type !== 'error') {
-                setTimeout(() => {
-                    if (message.parentNode === messageContainer) {
-                        message.remove();
-                    }
-                }, 5000);
-            }
-        }
-        
-        // Проверить существование файла
-        async function checkFileExists(url) {
-            try {
-                // Пробуем загрузить файл с помощью fetch
-                const response = await fetch(url, { method: 'HEAD' });
-                
-                // Проверяем статус ответа
-                if (response.status === 200) {
-                    return true;
-                } else if (response.status === 404) {
-                    return false;
-                }
-                
-                // Другие статусы - считаем что файл не найден
-                return false;
-            } catch (error) {
-                // Если произошла ошибка (например, CORS или сетевые проблемы)
-                console.warn('Ошибка при проверке файла:', error);
-                
-                // Попробуем альтернативный метод - загрузить как обычную страницу
-                return await checkFileExistsAlternative(url);
-            }
-        }
-        
-        // Альтернативный метод проверки файла
-        async function checkFileExistsAlternative(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = function() {
-                    resolve(true);
-                };
-                img.onerror = function() {
-                    // Пробуем еще раз через XMLHttpRequest
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('HEAD', url, true);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4) {
-                            resolve(xhr.status === 200);
-                        }
-                    };
-                    xhr.onerror = function() {
-                        resolve(false);
-                    };
-                    xhr.send();
-                };
-                img.src = url;
-            });
-        }
-        
         // Функция открытия теста
-        async function openTest() {
-            let testName = testInput.value.trim();
+        function openTest() {
+            let testName = document.getElementById('testName').value.trim();
             
+            // Если поле пустое - открываем КуМир
             if (!testName) {
-                showMessage('Введите название теста!', 'error');
-                testInput.focus();
+                window.open('test/kymir.html', '_blank');
                 return;
             }
             
@@ -641,174 +231,24 @@
             // Формируем путь к тесту
             const testPath = `test/${testName}.html`;
             
-            // Показываем индикатор загрузки
-            openButton.disabled = true;
-            openButton.innerHTML = '<div class="loader"></div> Проверка...';
-            
-            try {
-                // Проверяем существование файла
-                const fileExists = await checkFileExists(testPath);
-                
-                // Восстанавливаем кнопку
-                openButton.disabled = false;
-                openButton.innerHTML = '<i class="fas fa-external-link-alt"></i> Открыть';
-                
-                if (fileExists) {
-                    // Файл существует - открываем его
-                    showMessage(`Тест "${testName}" найден. Открываю...`, 'success');
-                    
-                    // Небольшая задержка для отображения сообщения
-                    setTimeout(() => {
-                        window.open(testPath, '_blank');
-                    }, 500);
-                } else {
-                    // Файл не найден
-                    showMessage(`Тест "${testName}" не найден. Проверьте название теста.`, 'error');
-                    
-                    // Предлагаем похожие варианты
-                    suggestSimilarTests(testName);
-                }
-            } catch (error) {
-                // Восстанавливаем кнопку
-                openButton.disabled = false;
-                openButton.innerHTML = '<i class="fas fa-external-link-alt"></i> Открыть';
-                
-                // Ошибка при проверке
-                showMessage('Ошибка при проверке теста. Пожалуйста, попробуйте еще раз.', 'error');
-                console.error('Ошибка:', error);
-            }
+            // Открываем тест в новой вкладке
+            window.open(testPath, '_blank');
         }
         
-        // Предложить похожие тесты
-        function suggestSimilarTests(testName) {
-            const lowerTestName = testName.toLowerCase();
-            
-            // Ищем похожие тесты
-            const suggestions = commonTests.filter(test => 
-                test.toLowerCase().includes(lowerTestName) || 
-                test.toLowerCase().startsWith(lowerTestName.substring(0, 3))
-            );
-            
-            if (suggestions.length > 0) {
-                // Показываем подсказку
-                const suggestionMessage = document.createElement('div');
-                suggestionMessage.className = 'message message-info';
-                suggestionMessage.style.marginTop = '8px';
-                suggestionMessage.innerHTML = `
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Возможно, вы искали: ${suggestions.slice(0, 3).map(s => `<strong>${s}</strong>`).join(', ')}</span>
-                `;
-                
-                // Добавляем после основного сообщения
-                setTimeout(() => {
-                    messageContainer.appendChild(suggestionMessage);
-                }, 100);
-            }
-        }
-        
-        // Функция открытия КуМир
-        async function openKumir() {
-            const kumirPath = 'test/kymir.html';
-            
-            // Показываем сообщение о загрузке
-            showMessage('Проверяю доступность КуМир...', 'info');
-            
-            try {
-                // Проверяем существование файла
-                const fileExists = await checkFileExists(kumirPath);
-                
-                if (fileExists) {
-                    showMessage('КуМир найден. Открываю...', 'success');
-                    
-                    // Небольшая задержка для отображения сообщения
-                    setTimeout(() => {
-                        window.open(kymirPath, '_blank');
-                    }, 500);
-                } else {
-                    showMessage('Файл КуМир не найден в папке test.', 'error');
-                    
-                    // Предлагаем создать файл
-                    const createMessage = document.createElement('div');
-                    createMessage.className = 'message message-info';
-                    createMessage.style.marginTop = '8px';
-                    createMessage.innerHTML = `
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Файл <strong>kymir.html</strong> не найден в папке test. Убедитесь, что тест существует.</span>
-                    `;
-                    
-                    messageContainer.appendChild(createMessage);
-                }
-            } catch (error) {
-                showMessage('Ошибка при проверке файла КуМир.', 'error');
-            }
-        }
-        
-        // Функция показа информации
-        function showInfo() {
-            const infoMessage = `
-Платформа тестирования Высоковской школы №25
-
-Как пользоваться:
-1. Введите название теста (без .html) в поле выше
-2. Нажмите "Открыть"
-3. Система проверит существование теста
-4. Если тест найден - он откроется в новой вкладке
-
-Для программирования нажмите на робота КуМир.
-            `;
-            
-            showMessage(infoMessage.replace(/\n/g, '<br>'), 'info');
-            
-            // Делаем сообщение постоянным
-            const message = messageContainer.querySelector('.message:last-child');
-            if (message) {
-                message.style.animation = 'none';
-            }
-        }
-        
-        // Обработка нажатия Enter в поле ввода
-        testInput.addEventListener('keypress', function(e) {
+        // Обработка нажатия Enter
+        document.getElementById('testName').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 openTest();
             }
         });
         
-        // Автодополнение при вводе
-        testInput.addEventListener('input', function() {
-            const value = this.value.toLowerCase();
-            if (!value) return;
-            
-            // Ищем подходящие тесты
-            const matches = commonTests.filter(test => 
-                test.toLowerCase().startsWith(value)
-            );
-            
-            // Можно добавить выпадающий список с подсказками
-            if (matches.length === 1 && matches[0].toLowerCase() === value) {
-                // Если введено полное совпадение
-                this.value = matches[0];
-            }
-        });
-        
-        // Инициализация при загрузке страницы
+        // Фокус на поле ввода при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            // Фокус на поле ввода
-            testInput.focus();
-            
-            // Приветственное сообщение
-            setTimeout(() => {
-                showMessage('Введите название теста и нажмите "Открыть". Система проверит его наличие.', 'info');
-            }, 1000);
+            document.getElementById('testName').focus();
         });
-        
-        // Поддержка темной темы
-        function updateTheme() {
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-theme', isDark);
-        }
-        
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
-        updateTheme();
     </script>
+    
+    <!-- Font Awesome для иконок -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
