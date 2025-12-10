@@ -196,7 +196,7 @@
                 </div>
                 
                 <p style="margin-bottom: 15px; color: #555;">
-                    Введите название теста (например: "kymir", "7testtest" ... ):
+                    Введите название теста (например: "matematika", "russkiy", "istoriya"):
                 </p>
                 
                 <input type="text" class="test-input" id="testName" 
@@ -208,7 +208,7 @@
                 
                 <div class="kumir-note">
                     <i class="fas fa-info-circle"></i> 
-                    Если оставить поле пустым, откроется  КуМир
+                    Если оставить поле пустым, откроется тест по программированию КуМир
                 </div>
             </div>
         </div>
@@ -221,7 +221,7 @@
             
             // Если поле пустое - открываем КуМир
             if (!testName) {
-                window.open('test/kymir.html', '_blank');
+                window.location.href = 'test/kymir.html';
                 return;
             }
             
@@ -231,8 +231,8 @@
             // Формируем путь к тесту
             const testPath = `test/${testName}.html`;
             
-            // Открываем тест в новой вкладке
-            window.open(testPath, '_blank');
+            // Открываем тест в той же вкладке
+            window.location.href = testPath;
         }
         
         // Обработка нажатия Enter
