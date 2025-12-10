@@ -183,16 +183,13 @@
             <!-- Приветствие -->
             <div class="welcome-section">
                 <div class="welcome-title">Добро пожаловать!</div>
-                <div class="welcome-text">
-                    Приветствуем вас на платформе тестирования Высоковской школы №25! 
-                    Эта платформа создана для проверки знаний наших учеников.
-                </div>
+                
             </div>
             
             <!-- Форма теста -->
             <div class="test-section">
                 <div class="test-title">
-                    <i class="fas fa-rocket"></i> Открыть тест
+                    <i class="fas fa-rocket"></i> Введите код:
                 </div>
                 
                 <input type="text" class="test-input" id="testName" 
@@ -211,6 +208,12 @@
     </div>
 
     <script>
+        // Автоматическое приведение к нижнему регистру и разрешение только букв и цифр
+        document.getElementById('testName').addEventListener('input', function(e) {
+            // Приводим к нижнему регистру и оставляем только буквы и цифры
+            this.value = this.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        });
+
         // Функция открытия теста
         function openTest() {
             let testName = document.getElementById('testName').value.trim();
@@ -224,8 +227,8 @@
             // Убираем расширение .html если пользователь его ввел
             testName = testName.replace(/\.html$/i, '');
             
-            // Формируем путь к тесту
-            const testPath = `test/${testName}.html`;
+            // Формируем путь к тесту (всегда в нижнем регистре)
+            const testPath = `test/${testName.toLowerCase()}.html`;
             
             // Открываем тест в той же вкладке
             window.location.href = testPath;
