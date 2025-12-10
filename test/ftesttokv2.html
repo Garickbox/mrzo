@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Контрольная работа: Электризация тел. Электрический ток</title>
+  <style>
+    /* Общие стили в стиле Telegram */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: #333;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      padding: 20px;
+      margin-bottom: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .section {
+      padding: 20px;
+      border-bottom: 1px solid #e6e6e6;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      color: #1e93c4;
+      margin-bottom: 16px;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .section-title:before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: #1e93c4;
+      border-radius: 2px;
+      margin-right: 8px;
+    }
+
+    /* Информация об ученике */
+    .student-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .student-info label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .student-info input,
+    .student-info select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #f9f9f9;
+      transition: all 0.2s;
+    }
+
+    .student-info input:focus,
+    .student-info select:focus {
+      outline: none;
+      border-color: #1e93c4;
+      background: white;
+      box-shadow: 0 0 0 2px rgba(30, 147, 196, 0.2);
+    }
+
+    .start-test-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 16px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    /* Прогресс-бар */
+    .progress-container {
+      background-color: #e6e6e6;
+      border-radius: 10px;
+      height: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #1e93c4 0%, #38a1d6 100%);
+      transition: width 0.4s ease;
+      border-radius: 10px;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-weight: 500;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Вопрос */
+    .question-container {
+      padding: 10px 0;
+    }
+
+    .question-text {
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #222;
+    }
+
+    .question-type {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #e1f2ff;
+      color: #1e93c4;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .problem-type {
+      background: #e1f7e9;
+      color: #34b86e;
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+
+    .option-label:hover {
+      background-color: #eef7fd;
+      border-color: #1e93c4;
+    }
+
+    .option-label.selected {
+      background-color: #e1f2ff;
+      border-color: #1e93c4;
+      box-shadow: 0 2px 5px rgba(30, 147, 196, 0.2);
+    }
+
+    .option-label.correct {
+      background-color: #e1f7e9;
+      border-color: #34b86e;
+      box-shadow: 0 2px 5px rgba(52, 184, 110, 0.2);
+    }
+
+    .option-label.incorrect {
+      background-color: #fde8e8;
+      border-color: #f36;
+      box-shadow: 0 2px 5px rgba(255, 51, 102, 0.2);
+    }
+
+    .option-label input {
+      margin-right: 12px;
+      transform: scale(1.3);
+      accent-color: #1e93c4;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* Кнопки */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0 10px;
+    }
+
+    button {
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(30, 147, 196, 0.3);
+      transition: all 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(30, 147, 196, 0.4);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, #ff5e5e 0%, #ff7676 100%);
+      box-shadow: 0 4px 10px rgba(255, 94, 94, 0.3);
+    }
+
+    .reset-btn:hover:not(:disabled) {
+      box-shadow: 0 6px 12px rgba(255, 94, 94, 0.4);
+    }
+
+    /* Блок результатов */
+    #results {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background-color: #f0f8f0;
+      border-radius: 16px;
+      margin-top: 10px;
+      border: 1px solid #d5e8d5;
+    }
+
+    .score-display {
+      font-size: 18px;
+      margin: 12px 0;
+      color: #27ae60;
+    }
+
+    .grade-display {
+      font-size: 32px;
+      font-weight: bold;
+      color: #2ecc71;
+      margin: 10px 0;
+    }
+
+    .points-breakdown {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    #telegram-status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .success {
+      background-color: #e1f7e9;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error {
+      background-color: #fde8e8;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Полноэкранный результат */
+    #fullscreen-result {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+    }
+
+    .fullscreen-content {
+      text-align: center;
+      padding: 30px;
+      background: white;
+      color: #333;
+      border-radius: 20px;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .fullscreen-content h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #1e93c4;
+    }
+
+    .fullscreen-grade {
+      font-size: 80px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #1e93c4;
+    }
+
+    .fullscreen-btn {
+      margin-top: 20px;
+      padding: 14px 30px;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
+      .container {
+        margin: 10px auto;
+        border-radius: 12px;
+      }
+
+      h1 {
+        font-size: 20px;
+        padding: 18px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .question-text {
+        font-size: 17px;
+      }
+
+      .option-label {
+        padding: 14px;
+        font-size: 15px;
+      }
+
+      .fullscreen-grade {
+        font-size: 70px;
+      }
+      
+      .fullscreen-content {
+        width: 90%;
+        padding: 25px;
+      }
+    }
+
+    /* Специфические стили для Telegram-like интерфейса */
+    .telegram-header {
+      background: linear-gradient(135deg, #1e93c4 0%, #38a1d6 100%);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .telegram-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="telegram-header">
+      <h1>⚡ Контрольная работа: Электризация тел. Электрический ток</h1>
+    </div>
+
+    <div class="section" id="student-info-section">
+      <div class="section-title">Информация об ученике</div>
+      <div class="student-info">
+        <div>
+          <label for="student-name">Имя:</label>
+          <input type="text" id="student-name" placeholder="Введите ваше имя" />
+        </div>
+        <div>
+          <label for="student-class">Класс:</label>
+          <select id="student-class">
+            <option value="">Выберите класс</option>
+            <option value="7">7 класс</option>
+            <option value="8">8 класс</option>
+            <option value="9">9 класс</option>
+            <option value="10">10 класс</option>
+            <option value="11">11 класс</option>
+          </select>
+        </div>
+      </div>
+      <button class="start-test-btn" id="start-test-btn">Начать контрольную</button>
+    </div>
+
+    <div id="test-content" style="display: none;">
+      <div class="section">
+        <div class="section-title">Прогресс выполнения</div>
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Задание 0 из 24</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Задание</div>
+        <div class="question-container">
+          <div class="question-type" id="question-type"></div>
+          <div class="question-text" id="question-text"></div>
+          <div class="options-container" id="options-container"></div>
+          <button id="confirm-btn" disabled>Подтвердить ответ</button>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button class="reset-btn" id="reset-btn">Сбросить контрольную</button>
+      </div>
+
+      <div id="results">
+        <h2>Результаты контрольной работы</h2>
+        <div class="score-display">Набрано баллов: <span id="score-value">0</span> из 30</div>
+        <div class="points-breakdown" id="points-breakdown"></div>
+        <div class="grade-display">Оценка: <span id="grade-value">—</span></div>
+        <div id="telegram-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Полноэкранный результат -->
+  <div id="fullscreen-result">
+    <div class="fullscreen-content">
+      <h2>Ваш результат</h2>
+      <div class="fullscreen-grade" id="fullscreen-grade">5</div>
+      <p style="margin: 15px 0; color: #666;">Набрано баллов: <span id="fullscreen-score">0</span> из 30</p>
+      <div id="fullscreen-breakdown" style="margin: 15px 0; color: #555; font-size: 14px;"></div>
+      <button class="fullscreen-btn" id="finish-btn">Завершить</button>
+    </div>
+  </div>
+
+  <script>
+    // Глобальные переменные
+    const DEFAULT_BOT_TOKEN = "8344281396:AAGZ9-M2XRyPMHiI2akBSSIN7QAtRGDmLOY";
+    const DEFAULT_CHAT_ID = "1189539923";
+    
+    let currentQuestionIndex = 0;
+    let totalScore = 0;
+    let userAnswers = Array(24).fill(null);
+    let shuffledQuestionsAndProblems = [];
+    let isSubmitted = false;
+    let isShowingAnswer = false;
+    let currentShuffledOptions = [];
+    
+    // БАНК ВОПРОСОВ ПО ЭЛЕКТРИЧЕСТВУ (50 вопросов)
+    const questionsBank = [
+      { text: "Что такое электризация?", options: [{t:"Сообщение телу электрического заряда", v:"correct"},{t:"Передача тепла от одного тела к другому", v:"wrong"},{t:"Движение электронов в проводнике", v:"wrong"},{t:"Создание магнитного поля", v:"wrong"}], points: 1 },
+      { text: "Какие два рода электрических зарядов существуют?", options: [{t:"Северный и южный", v:"wrong"},{t:"Положительный и отрицательный", v:"correct"},{t:"Тепловой и холодный", v:"wrong"},{t:"Сильный и слабый", v:"wrong"}], points: 1 },
+      { text: "Как взаимодействуют тела с одноименными зарядами?", options: [{t:"Притягиваются", v:"wrong"},{t:"Отталкиваются", v:"correct"},{t:"Не взаимодействуют", v:"wrong"},{t:"Сначала притягиваются, затем отталкиваются", v:"wrong"}], points: 1 },
+      { text: "Как взаимодействуют тела с разноименными зарядами?", options: [{t:"Притягиваются", v:"correct"},{t:"Отталкиваются", v:"wrong"},{t:"Не взаимодействуют", v:"wrong"},{t:"Сначала отталкиваются, затем притягиваются", v:"wrong"}], points: 1 },
+      { text: "Кто открыл закон взаимодействия электрических зарядов?", options: [{t:"Исаак Ньютон", v:"wrong"},{t:"Шарль Кулон", v:"correct"},{t:"Алессандро Вольта", v:"wrong"},{t:"Майкл Фарадей", v:"wrong"}], points: 1 },
+      { text: "Как называется прибор для обнаружения электрического заряда?", options: [{t:"Амперметр", v:"wrong"},{t:"Вольтметр", v:"wrong"},{t:"Электроскоп", v:"correct"},{t:"Гальванометр", v:"wrong"}], points: 1 },
+      { text: "Что такое проводники электричества?", options: [{t:"Вещества, не передающие электрический заряд", v:"wrong"},{t:"Вещества, передающие электрический заряд", v:"correct"},{t:"Вещества, создающие электрический заряд", v:"wrong"},{t:"Вещества, накапливающие электрический заряд", v:"wrong"}], points: 1 },
+      { text: "Что такое диэлектрики?", options: [{t:"Вещества, хорошо проводящие электричество", v:"wrong"},{t:"Вещества, не проводящие электричество", v:"correct"},{t:"Вещества, создающие электричество", v:"wrong"},{t:"Вещества, усиливающие электричество", v:"wrong"}], points: 1 },
+      { text: "Что такое электрическое поле?", options: [{t:"Пространство вокруг заряженного тела, где действуют электрические силы", v:"correct"},{t:"Провод, по которому течет ток", v:"wrong"},{t:"Прибор для измерения напряжения", v:"wrong"},{t:"Сила притяжения между телами", v:"wrong"}], points: 1 },
+      { text: "Что такое электрон?", options: [{t:"Положительно заряженная частица", v:"wrong"},{t:"Отрицательно заряженная частица", v:"correct"},{t:"Нейтральная частица", v:"wrong"},{t:"Частица света", v:"wrong"}], points: 1 },
+      { text: "Какой заряд имеет электрон?", options: [{t:"+1,6·10⁻¹⁹ Кл", v:"wrong"},{t:"-1,6·10⁻¹⁹ Кл", v:"correct"},{t:"0 Кл", v:"wrong"},{t:"+9,1·10⁻³¹ Кл", v:"wrong"}], points: 1 },
+      { text: "Из каких частиц состоит ядро атома?", options: [{t:"Только из протонов", v:"wrong"},{t:"Только из нейтронов", v:"wrong"},{t:"Из протонов и нейтронов", v:"correct"},{t:"Из электронов и протонов", v:"wrong"}], points: 1 },
+      { text: "Что такое положительный ион?", options: [{t:"Атом, потерявший один или несколько электронов", v:"correct"},{t:"Атом, присоединивший лишний электрон", v:"wrong"},{t:"Атом с равным числом протонов и электронов", v:"wrong"},{t:"Атом с большим числом нейтронов", v:"wrong"}], points: 1 },
+      { text: "Что такое отрицательный ион?", options: [{t:"Атом, потерявший один или несколько электронов", v:"wrong"},{t:"Атом, присоединивший лишний электрон", v:"correct"},{t:"Атом с равным числом протонов и электронов", v:"wrong"},{t:"Атом с большим числом нейтронов", v:"wrong"}], points: 1 },
+      { text: "Что утверждает закон сохранения электрического заряда?", options: [{t:"Заряд может создаваться из ничего", v:"wrong"},{t:"В изолированной системе суммарный заряд остается постоянным", v:"correct"},{t:"Заряд всегда увеличивается", v:"wrong"},{t:"Заряд зависит от температуры", v:"wrong"}], points: 1 },
+      { text: "Что такое статическое электричество?", options: [{t:"Движущийся электрический заряд", v:"wrong"},{t:"Неподвижный электрический заряд", v:"correct"},{t:"Электрический ток в металлах", v:"wrong"},{t:"Электрическое поле вокруг магнита", v:"wrong"}], points: 1 },
+      { text: "Что такое электрический ток?", options: [{t:"Скопление неподвижных зарядов", v:"wrong"},{t:"Упорядоченное движение заряженных частиц", v:"correct"},{t:"Сила притяжения между зарядами", v:"wrong"},{t:"Энергия электрического поля", v:"wrong"}], points: 1 },
+      { text: "Какие частицы создают ток в металлах?", options: [{t:"Протоны", v:"wrong"},{t:"Ионы", v:"wrong"},{t:"Свободные электроны", v:"correct"},{t:"Нейтроны", v:"wrong"}], points: 1 },
+      { text: "Как называется прибор для измерения силы тока?", options: [{t:"Вольтметр", v:"wrong"},{t:"Амперметр", v:"correct"},{t:"Омметр", v:"wrong"},{t:"Электроскоп", v:"wrong"}], points: 1 },
+      { text: "Как называется единица силы тока?", options: [{t:"Вольт", v:"wrong"},{t:"Ампер", v:"correct"},{t:"Ом", v:"wrong"},{t:"Кулон", v:"wrong"}], points: 1 },
+      { text: "Как называется единица напряжения?", options: [{t:"Вольт", v:"correct"},{t:"Ампер", v:"wrong"},{t:"Ом", v:"wrong"},{t:"Джоуль", v:"wrong"}], points: 1 },
+      { text: "Как называется единица сопротивления?", options: [{t:"Вольт", v:"wrong"},{t:"Ампер", v:"wrong"},{t:"Ом", v:"correct"},{t:"Ватт", v:"wrong"}], points: 1 },
+      { text: "Кто открыл закон, связывающий силу тока, напряжение и сопротивление?", options: [{t:"Георг Ом", v:"correct"},{t:"Андре Ампер", v:"wrong"},{t:"Джеймс Джоуль", v:"wrong"},{t:"Эмилий Ленц", v:"wrong"}], points: 1 },
+      { text: "Что такое последовательное соединение проводников?", options: [{t:"Соединение, при котором проводники имеют две общие точки", v:"wrong"},{t:"Соединение, при котором проводники соединены друг за другом", v:"correct"},{t:"Соединение, при котором все проводники подключены к одним точкам", v:"wrong"},{t:"Соединение через конденсатор", v:"wrong"}], points: 1 },
+      { text: "Что такое параллельное соединение проводников?", options: [{t:"Соединение, при котором проводники соединены друг за другом", v:"wrong"},{t:"Соединение, при котором все проводники подключены к одним точкам", v:"correct"},{t:"Соединение через сопротивление", v:"wrong"},{t:"Соединение через источник тока", v:"wrong"}], points: 1 },
+      { text: "Как вычисляется работа электрического тока?", options: [{t:"A = U·I·t", v:"correct"},{t:"A = U/I", v:"wrong"},{t:"A = I·t", v:"wrong"},{t:"A = U·I", v:"wrong"}], points: 1 },
+      { text: "Как вычисляется мощность электрического тока?", options: [{t:"P = U·I", v:"correct"},{t:"P = U/I", v:"wrong"},{t:"P = I·t", v:"wrong"},{t:"P = U·t", v:"wrong"}], points: 1 },
+      { text: "Кто открыл закон теплового действия тока?", options: [{t:"Джеймс Джоуль и Эмилий Ленц", v:"correct"},{t:"Георг Ом и Андре Ампер", v:"wrong"},{t:"Майкл Фарадей и Джеймс Максвелл", v:"wrong"},{t:"Алессандро Вольта и Шарль Кулон", v:"wrong"}], points: 1 },
+      { text: "Что такое аккумулятор?", options: [{t:"Источник тока одноразового действия", v:"wrong"},{t:"Источник тока многократного действия", v:"correct"},{t:"Прибор для измерения напряжения", v:"wrong"},{t:"Прибор для измерения сопротивления", v:"wrong"}], points: 1 },
+      { text: "Что такое заземление?", options: [{t:"Соединение тела с землей для снятия заряда", v:"correct"},{t:"Подача высокого напряжения", v:"wrong"},{t:"Изоляция от земли", v:"wrong"},{t:"Увеличение сопротивления", v:"wrong"}], points: 1 },
+      { text: "Что такое янтарь по-гречески?", options: [{t:"Амбер", v:"wrong"},{t:"Электрон", v:"correct"},{t:"Камень солнца", v:"wrong"},{t:"Золотой камень", v:"wrong"}], points: 1 },
+      { text: "Что происходит при трении стеклянной палочки о шелк?", options: [{t:"Стекло заряжается положительно, шелк - отрицательно", v:"correct"},{t:"Стекло заряжается отрицательно, шелк - положительно", v:"wrong"},{t:"Оба заряжаются положительно", v:"wrong"},{t:"Оба заряжаются отрицательно", v:"wrong"}], points: 1 },
+      { text: "Что происходит при трении эбонитовой палочки о шерсть?", options: [{t:"Эбонит заряжается положительно, шерсть - отрицательно", v:"wrong"},{t:"Эбонит заряжается отрицательно, шерсть - положительно", v:"correct"},{t:"Оба заряжаются положительно", v:"wrong"},{t:"Оба заряжаются отрицательно", v:"wrong"}], points: 1 },
+      { text: "Что такое электрометр?", options: [{t:"Прибор для измерения силы тока", v:"wrong"},{t:"Прибор для измерения напряжения", v:"wrong"},{t:"Прибор для измерения заряда", v:"correct"},{t:"Прибор для измерения сопротивления", v:"wrong"}], points: 1 },
+      { text: "Какой ученый экспериментально доказал существование электрона?", options: [{t:"Джозеф Томсон", v:"correct"},{t:"Эрнест Резерфорд", v:"wrong"},{t:"Роберт Милликен", v:"wrong"},{t:"Абрам Иоффе", v:"wrong"}], points: 1 },
+      { text: "Какой заряд имеет протон?", options: [{t:"+1,6·10⁻¹⁹ Кл", v:"correct"},{t:"-1,6·10⁻¹⁹ Кл", v:"wrong"},{t:"0 Кл", v:"wrong"},{t:"+9,1·10⁻³¹ Кл", v:"wrong"}], points: 1 },
+      { text: "Какой заряд имеет нейтрон?", options: [{t:"+1,6·10⁻¹⁹ Кл", v:"wrong"},{t:"-1,6·10⁻¹⁹ Кл", v:"wrong"},{t:"0 Кл", v:"correct"},{t:"+9,1·10⁻³¹ Кл", v:"wrong"}], points: 1 },
+      { text: "Что такое полупроводники?", options: [{t:"Вещества, всегда проводящие ток", v:"wrong"},{t:"Вещества, никогда не проводящие ток", v:"wrong"},{t:"Вещества, проводящие ток при определенных условиях", v:"correct"},{t:"Вещества, проводящие только переменный ток", v:"wrong"}], points: 1 },
+      { text: "Что такое реостат?", options: [{t:"Прибор для измерения сопротивления", v:"wrong"},{t:"Прибор с переменным сопротивлением", v:"correct"},{t:"Источник тока", v:"wrong"},{t:"Прибор для измерения напряжения", v:"wrong"}], points: 1 },
+      { text: "Что такое гальванический элемент?", options: [{t:"Источник тока на основе химических реакций", v:"correct"},{t:"Прибор для измерения тока", v:"wrong"},{t:"Устройство для зарядки аккумуляторов", v:"wrong"},{t:"Прибор для измерения напряжения", v:"wrong"}], points: 1 },
+      { text: "Что такое фотоэлемент?", options: [{t:"Источник тока, преобразующий свет в электричество", v:"correct"},{t:"Прибор для измерения света", v:"wrong"},{t:"Элемент питания", v:"wrong"},{t:"Прибор для измерения тока", v:"wrong"}], points: 1 },
+      { text: "Что такое термоэлемент?", options: [{t:"Источник тока, преобразующий тепло в электричество", v:"correct"},{t:"Прибор для измерения температуры", v:"wrong"},{t:"Нагревательный прибор", v:"wrong"},{t:"Прибор для измерения тока", v:"wrong"}], points: 1 },
+      { text: "Что такое генератор?", options: [{t:"Источник тока, преобразующий механическую энергию в электрическую", v:"correct"},{t:"Прибор для измерения тока", v:"wrong"},{t:"Устройство для усиления тока", v:"wrong"},{t:"Прибор для измерения напряжения", v:"wrong"}], points: 1 },
+      { text: "Что такое электролиз?", options: [{t:"Химическая реакция под действием электрического тока", v:"correct"},{t:"Прохождение тока через металл", v:"wrong"},{t:"Зарядка аккумулятора", v:"wrong"},{t:"Измерение электрического заряда", v:"wrong"}], points: 1 },
+      { text: "Что такое анод?", options: [{t:"Электрод, подключенный к положительному полюсу", v:"correct"},{t:"Электрод, подключенный к отрицательному полюсу", v:"wrong"},{t:"Источник тока", v:"wrong"},{t:"Прибор для измерения тока", v:"wrong"}], points: 1 }
+    ];
+    
+    // БАНК ЗАДАЧ ПО ЭЛЕКТРИЧЕСТВУ (30 задач)
+    const problemsBank = [
+      { text: "Через спираль электроплитки за 2 мин прошёл электрический заряд 600 Кл. Какова сила тока в спирали?", options: [{t:"300 А", v:"wrong"},{t:"5 А", v:"correct"},{t:"1200 А", v:"wrong"},{t:"0,2 А", v:"wrong"},{t:"50 А", v:"wrong"},{t:"10 А", v:"wrong"},{t:"100 А", v:"wrong"},{t:"1 А", v:"wrong"}], points: 3 },
+      { text: "Напряжение на лампочке карманного фонарика 3,5 В. Чему равна работа тока за 1 минуту, если сила тока 0,28 А?", options: [{t:"58,8 Дж", v:"correct"},{t:"0,98 Дж", v:"wrong"},{t:"12,5 Дж", v:"wrong"},{t:"100 Дж", v:"wrong"},{t:"3,5 Дж", v:"wrong"},{t:"28 Дж", v:"wrong"},{t:"10 Дж", v:"wrong"},{t:"1 Дж", v:"wrong"}], points: 3 },
+      { text: "Сила тока в проводнике 2 А при напряжении на его концах 4,5 В. Каково сопротивление проводника?", options: [{t:"9 Ом", v:"wrong"},{t:"2,25 Ом", v:"correct"},{t:"0,44 Ом", v:"wrong"},{t:"4,5 Ом", v:"wrong"},{t:"6,5 Ом", v:"wrong"},{t:"1 Ом", v:"wrong"},{t:"3 Ом", v:"wrong"},{t:"7 Ом", v:"wrong"}], points: 3 },
+      { text: "Два резистора сопротивлением 2 и 4 Ом соединены последовательно. Напряжение на первом резисторе 4 В. Каково напряжение на втором резисторе?", options: [{t:"2 В", v:"wrong"},{t:"4 В", v:"wrong"},{t:"6 В", v:"wrong"},{t:"8 В", v:"correct"},{t:"10 В", v:"wrong"},{t:"12 В", v:"wrong"},{t:"1 В", v:"wrong"},{t:"3 В", v:"wrong"}], points: 3 },
+      { text: "Два резистора сопротивлением 3 и 6 Ом соединены параллельно. Сила тока в первом резисторе 2 А. Какова сила тока во втором резисторе?", options: [{t:"1 А", v:"correct"},{t:"2 А", v:"wrong"},{t:"3 А", v:"wrong"},{t:"4 А", v:"wrong"},{t:"5 А", v:"wrong"},{t:"6 А", v:"wrong"},{t:"0,5 А", v:"wrong"},{t:"0,2 А", v:"wrong"}], points: 3 },
+      { text: "Электрическая плитка работает при силе тока 5 А и напряжении 120 В. Какую мощность она потребляет?", options: [{t:"24 Вт", v:"wrong"},{t:"600 Вт", v:"correct"},{t:"125 Вт", v:"wrong"},{t:"2400 Вт", v:"wrong"},{t:"100 Вт", v:"wrong"},{t:"500 Вт", v:"wrong"},{t:"60 Вт", v:"wrong"},{t:"1200 Вт", v:"wrong"}], points: 3 },
+      { text: "Каково сопротивление алюминиевого провода длиной 400 м и площадью поперечного сечения 4 мм²? Удельное сопротивление алюминия 0,028 Ом·мм²/м.", options: [{t:"2,8 Ом", v:"correct"},{t:"28 Ом", v:"wrong"},{t:"0,28 Ом", v:"wrong"},{t:"280 Ом", v:"wrong"},{t:"1,4 Ом", v:"wrong"},{t:"14 Ом", v:"wrong"},{t:"0,14 Ом", v:"wrong"},{t:"4 Ом", v:"wrong"}], points: 3 },
+      { text: "Сколько электронов прошло через поперечное сечение проводника за 2 с при силе тока 8 А? Заряд электрона 1,6·10⁻¹⁹ Кл.", options: [{t:"10²⁰", v:"correct"},{t:"10¹⁹", v:"wrong"},{t:"10¹⁸", v:"wrong"},{t:"10¹⁷", v:"wrong"},{t:"10¹⁶", v:"wrong"},{t:"10¹⁵", v:"wrong"},{t:"10¹⁴", v:"wrong"},{t:"10¹³", v:"wrong"}], points: 3 },
+      { text: "При напряжении 110 В сила тока в резисторе равна 5 А. Какова будет сила тока в этом же резисторе, если напряжение на нём увеличить на 10 В?", options: [{t:"5,45 А", v:"correct"},{t:"5,5 А", v:"wrong"},{t:"6 А", v:"wrong"},{t:"10 А", v:"wrong"},{t:"15 А", v:"wrong"},{t:"4,5 А", v:"wrong"},{t:"4 А", v:"wrong"},{t:"3 А", v:"wrong"}], points: 3 },
+      { text: "На цоколе лампочки написано: «0,28 А, 3,5 В». Какую мощность потребляет лампочка?", options: [{t:"0,98 Вт", v:"correct"},{t:"3,22 Вт", v:"wrong"},{t:"12,5 Вт", v:"wrong"},{t:"0,08 Вт", v:"wrong"},{t:"1 Вт", v:"wrong"},{t:"2 Вт", v:"wrong"},{t:"3 Вт", v:"wrong"},{t:"4 Вт", v:"wrong"}], points: 3 },
+      { text: "Чему равна работа электрического тока за 5 мин в резисторе, если напряжение 24 В, а сила тока 2 А?", options: [{t:"240 Дж", v:"wrong"},{t:"1200 Дж", v:"wrong"},{t:"14400 Дж", v:"correct"},{t:"2400 Дж", v:"wrong"},{t:"4800 Дж", v:"wrong"},{t:"7200 Дж", v:"wrong"},{t:"9600 Дж", v:"wrong"},{t:"12000 Дж", v:"wrong"}], points: 3 },
+      { text: "Определите мощность тока в электрической лампе, если при напряжении 5 В сила тока в ней 100 мА.", options: [{t:"500 Вт", v:"wrong"},{t:"50 Вт", v:"wrong"},{t:"0,5 Вт", v:"correct"},{t:"5 Вт", v:"wrong"},{t:"0,05 Вт", v:"wrong"},{t:"0,005 Вт", v:"wrong"},{t:"1 Вт", v:"wrong"},{t:"2 Вт", v:"wrong"}], points: 3 },
+      { text: "Электрическая печь сопротивлением 100 Ом рассчитана на силу тока 2 А. Какое количество теплоты выделится за 10 минут работы?", options: [{t:"2000 Дж", v:"wrong"},{t:"24000 Дж", v:"wrong"},{t:"240000 Дж", v:"correct"},{t:"40000 Дж", v:"wrong"},{t:"4000 Дж", v:"wrong"},{t:"2400 Дж", v:"wrong"},{t:"12000 Дж", v:"wrong"},{t:"120000 Дж", v:"wrong"}], points: 3 },
+      { text: "Два резистора сопротивлением 10 и 20 Ом соединены последовательно. Напряжение на концах цепи 6 В. Найдите силу тока в цепи.", options: [{t:"0,1 А", v:"wrong"},{t:"0,2 А", v:"correct"},{t:"0,3 А", v:"wrong"},{t:"0,4 А", v:"wrong"},{t:"0,5 А", v:"wrong"},{t:"0,6 А", v:"wrong"},{t:"0,8 А", v:"wrong"},{t:"1 А", v:"wrong"}], points: 3 },
+      { text: "Два резистора сопротивлением 3 и 9 Ом соединены параллельно. Напряжение на них 27 В. Найдите общую силу тока.", options: [{t:"3 А", v:"wrong"},{t:"9 А", v:"wrong"},{t:"12 А", v:"correct"},{t:"15 А", v:"wrong"},{t:"18 А", v:"wrong"},{t:"21 А", v:"wrong"},{t:"24 А", v:"wrong"},{t:"27 А", v:"wrong"}], points: 3 },
+      { text: "Сколько времени длится пуск стартёра автомобиля, если при силе тока 100 А за это время протекает заряд 1000 Кл?", options: [{t:"1 с", v:"wrong"},{t:"10 с", v:"correct"},{t:"100 с", v:"wrong"},{t:"1000 с", v:"wrong"},{t:"0,1 с", v:"wrong"},{t:"5 с", v:"wrong"},{t:"20 с", v:"wrong"},{t:"50 с", v:"wrong"}], points: 3 },
+      { text: "Какой заряд проходит через поперечное сечение проводника за 1 с при силе тока 1 мА?", options: [{t:"1 Кл", v:"wrong"},{t:"0,001 Кл", v:"correct"},{t:"1000 Кл", v:"wrong"},{t:"0,1 Кл", v:"wrong"},{t:"0,01 Кл", v:"wrong"},{t:"10 Кл", v:"wrong"},{t:"0,0001 Кл", v:"wrong"},{t:"0,5 Кл", v:"wrong"}], points: 3 },
+      { text: "Мощность электрического тока в резисторе 100 Вт при напряжении 50 В. Каково сопротивление резистора?", options: [{t:"25 Ом", v:"correct"},{t:"50 Ом", v:"wrong"},{t:"100 Ом", v:"wrong"},{t:"200 Ом", v:"wrong"},{t:"5 Ом", v:"wrong"},{t:"10 Ом", v:"wrong"},{t:"75 Ом", v:"wrong"},{t:"150 Ом", v:"wrong"}], points: 3 },
+      { text: "Какое количество теплоты выделится в проводнике сопротивлением 10 Ом за 2 с при силе тока 3 А?", options: [{t:"30 Дж", v:"wrong"},{t:"60 Дж", v:"wrong"},{t:"90 Дж", v:"wrong"},{t:"180 Дж", v:"correct"},{t:"270 Дж", v:"wrong"},{t:"360 Дж", v:"wrong"},{t:"450 Дж", v:"wrong"},{t:"540 Дж", v:"wrong"}], points: 3 },
+      { text: "Сила тока в электрической цепи, содержащей проводник сопротивлением 12 Ом, равна 0,06 А. Каково напряжение на проводнике?", options: [{t:"0,72 В", v:"correct"},{t:"7,2 В", v:"wrong"},{t:"0,5 В", v:"wrong"},{t:"5 В", v:"wrong"},{t:"1 В", v:"wrong"},{t:"2 В", v:"wrong"},{t:"3 В", v:"wrong"},{t:"10 В", v:"wrong"}], points: 3 },
+      { text: "Две лампы сопротивлением 100 Ом и 200 Ом соединены последовательно и подключены к напряжению 60 В. Какая мощность выделяется на первой лампе?", options: [{t:"4 Вт", v:"correct"},{t:"8 Вт", v:"wrong"},{t:"12 Вт", v:"wrong"},{t:"16 Вт", v:"wrong"},{t:"20 Вт", v:"wrong"},{t:"24 Вт", v:"wrong"},{t:"30 Вт", v:"wrong"},{t:"36 Вт", v:"wrong"}], points: 3 },
+      { text: "Электрический чайник мощностью 1,5 кВт работает от сети 220 В. Какое сопротивление имеет спираль чайника?", options: [{t:"32,3 Ом", v:"correct"},{t:"64,6 Ом", v:"wrong"},{t:"129,2 Ом", v:"wrong"},{t:"16,1 Ом", v:"wrong"},{t:"8,1 Ом", v:"wrong"},{t:"4 Ом", v:"wrong"},{t:"2 Ом", v:"wrong"},{t:"1 Ом", v:"wrong"}], points: 3 },
+      { text: "Сопротивление никелинового провода длиной 10 м и площадью сечения 0,5 мм² равно 4 Ом. Каково удельное сопротивление никелина?", options: [{t:"0,2 Ом·мм²/м", v:"correct"},{t:"0,4 Ом·мм²/м", v:"wrong"},{t:"0,8 Ом·мм²/м", v:"wrong"},{t:"1,6 Ом·мм²/м", v:"wrong"},{t:"3,2 Ом·мм²/м", v:"wrong"},{t:"6,4 Ом·мм²/м", v:"wrong"},{t:"12,8 Ом·мм²/м", v:"wrong"},{t:"25,6 Ом·мм²/м", v:"wrong"}], points: 3 },
+      { text: "Три резистора сопротивлением 2, 3 и 5 Ом соединены последовательно. Напряжение на первом резисторе 4 В. Каково общее напряжение в цепи?", options: [{t:"10 В", v:"wrong"},{t:"15 В", v:"wrong"},{t:"20 В", v:"correct"},{t:"25 В", v:"wrong"},{t:"30 В", v:"wrong"},{t:"35 В", v:"wrong"},{t:"40 В", v:"wrong"},{t:"45 В", v:"wrong"}], points: 3 },
+      { text: "Два резистора сопротивлением 6 Ом и 12 Ом соединены параллельно. Общая сила тока в цепи 3 А. Какова сила тока в первом резисторе?", options: [{t:"1 А", v:"wrong"},{t:"2 А", v:"correct"},{t:"3 А", v:"wrong"},{t:"4 А", v:"wrong"},{t:"5 А", v:"wrong"},{t:"6 А", v:"wrong"},{t:"0,5 А", v:"wrong"},{t:"0,2 А", v:"wrong"}], points: 3 },
+      { text: "Электрическая плитка за 20 минут потребляет 0,6 кВт·ч энергии. Какова мощность плитки?", options: [{t:"1,8 кВт", v:"correct"},{t:"3,6 кВт", v:"wrong"},{t:"0,9 кВт", v:"wrong"},{t:"0,45 кВт", v:"wrong"},{t:"2,7 кВт", v:"wrong"},{t:"5,4 кВт", v:"wrong"},{t:"0,3 кВт", v:"wrong"},{t:"0,15 кВт", v:"wrong"}], points: 3 },
+      { text: "Какое количество теплоты выделится в проводнике за 10 минут, если его сопротивление 50 Ом, а сила тока 2 А?", options: [{t:"12000 Дж", v:"wrong"},{t:"60000 Дж", v:"wrong"},{t:"120000 Дж", v:"correct"},{t:"240000 Дж", v:"wrong"},{t:"480000 Дж", v:"wrong"},{t:"960000 Дж", v:"wrong"},{t:"1200 Дж", v:"wrong"},{t:"6000 Дж", v:"wrong"}], points: 3 },
+      { text: "Напряжение на концах проводника 12 В. За 5 минут через его сечение прошел заряд 300 Кл. Какая работа совершена током?", options: [{t:"36 Дж", v:"wrong"},{t:"360 Дж", v:"wrong"},{t:"3600 Дж", v:"correct"},{t:"7200 Дж", v:"wrong"},{t:"14400 Дж", v:"wrong"},{t:"28800 Дж", v:"wrong"},{t:"36000 Дж", v:"wrong"},{t:"72000 Дж", v:"wrong"}], points: 3 },
+      { text: "Сопротивление вольфрамовой нити лампы накаливания при 20°C равно 50 Ом. При работе лампы сопротивление увеличивается до 550 Ом. Во сколько раз увеличилось сопротивление?", options: [{t:"в 5 раз", v:"wrong"},{t:"в 10 раз", v:"wrong"},{t:"в 11 раз", v:"correct"},{t:"в 12 раз", v:"wrong"},{t:"в 15 раз", v:"wrong"},{t:"в 20 раз", v:"wrong"},{t:"в 25 раз", v:"wrong"},{t:"в 30 раз", v:"wrong"}], points: 3 },
+      { text: "Батарейка карманного фонаря дает напряжение 4,5 В. Какую работу совершает электрическое поле при перемещении заряда 2 Кл от одного полюса батарейки к другому?", options: [{t:"2,25 Дж", v:"wrong"},{t:"4,5 Дж", v:"wrong"},{t:"9 Дж", v:"correct"},{t:"18 Дж", v:"wrong"},{t:"36 Дж", v:"wrong"},{t:"72 Дж", v:"wrong"},{t:"144 Дж", v:"wrong"},{t:"288 Дж", v:"wrong"}], points: 3 }
+    ];
+
+    // Кэшируем DOM
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const questionText = document.getElementById('question-text');
+    const questionType = document.getElementById('question-type');
+    const optionsContainer = document.getElementById('options-container');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultsDiv = document.getElementById('results');
+    const scoreValue = document.getElementById('score-value');
+    const gradeValue = document.getElementById('grade-value');
+    const pointsBreakdown = document.getElementById('points-breakdown');
+    const telegramStatus = document.getElementById('telegram-status');
+    const studentNameInput = document.getElementById('student-name');
+    const studentClassSelect = document.getElementById('student-class');
+    const fullscreenResult = document.getElementById('fullscreen-result');
+    const fullscreenGrade = document.getElementById('fullscreen-grade');
+    const fullscreenScore = document.getElementById('fullscreen-score');
+    const fullscreenBreakdown = document.getElementById('fullscreen-breakdown');
+    const finishBtn = document.getElementById('finish-btn');
+    const startTestBtn = document.getElementById('start-test-btn');
+    const studentInfoSection = document.getElementById('student-info-section');
+    const testContent = document.getElementById('test-content');
+
+    // Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Инициализация контрольной работы
+    function initTest() {
+      // Выбираем 21 случайный вопрос из банка (из 50)
+      const selectedQuestions = shuffleArray([...questionsBank]).slice(0, 21);
+      
+      // Выбираем 3 случайные задачи из банка (из 30)
+      const selectedProblems = shuffleArray([...problemsBank]).slice(0, 3);
+      
+      // Объединяем вопросы и задачи
+      shuffledQuestionsAndProblems = [...selectedQuestions, ...selectedProblems];
+      
+      // Перемешиваем порядок
+      shuffledQuestionsAndProblems = shuffleArray(shuffledQuestionsAndProblems);
+      
+      currentQuestionIndex = 0;
+      totalScore = 0;
+      userAnswers = Array(24).fill(null);
+      isSubmitted = false;
+      isShowingAnswer = false;
+      currentShuffledOptions = [];
+      
+      confirmBtn.disabled = false;
+      resultsDiv.style.display = 'none';
+      fullscreenResult.style.display = 'none';
+      
+      showQuestion(0);
+    }
+
+    // Показать вопрос/задачу
+    function showQuestion(index) {
+      const item = shuffledQuestionsAndProblems[index];
+      questionText.textContent = item.text;
+      
+      // Устанавливаем тип задания
+      if (item.points === 3) {
+        questionType.textContent = "Задача (3 балла)";
+        questionType.className = "question-type problem-type";
+      } else {
+        questionType.textContent = "Теоретический вопрос (1 балл)";
+        questionType.className = "question-type";
+      }
+      
+      // Перемешиваем варианты ответов для текущего вопроса
+      currentShuffledOptions = shuffleArray([...item.options]);
+      
+      optionsContainer.innerHTML = '';
+      currentShuffledOptions.forEach((option, i) => {
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        if (userAnswers[index] === option.v) {
+          label.classList.add('selected');
+        }
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'option';
+        radio.value = option.v;
+        radio.disabled = isShowingAnswer;
+        
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(option.t));
+        
+        if (!isShowingAnswer) {
+          label.addEventListener('click', () => {
+            document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+            label.classList.add('selected');
+            radio.checked = true;
+            confirmBtn.disabled = false;
+          });
+        }
+        
+        optionsContainer.appendChild(label);
+      });
+      
+      updateProgress();
+    }
+
+    // Подсветка правильного ответа
+    function highlightCorrectAnswer() {
+      const options = optionsContainer.querySelectorAll('.option-label');
+      
+      options.forEach((option, index) => {
+        const radio = option.querySelector('input');
+        if (currentShuffledOptions[index].v === 'correct') {
+          option.classList.add('correct');
+        } else if (radio.checked && currentShuffledOptions[index].v === 'wrong') {
+          option.classList.add('incorrect');
+        }
+        
+        radio.disabled = true;
+      });
+    }
+
+    // Обновление прогресса
+    function updateProgress() {
+      const percent = (currentQuestionIndex / 24) * 100;
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = `Задание ${currentQuestionIndex + 1} из 24`;
+    }
+
+    // Подтверждение ответа
+    function confirmAnswer() {
+      const selectedOption = document.querySelector('input[name="option"]:checked');
+      if (!selectedOption) {
+        alert('Выберите вариант ответа');
+        return;
+      }
+      
+      userAnswers[currentQuestionIndex] = selectedOption.value;
+      
+      confirmBtn.disabled = true;
+      isShowingAnswer = true;
+      
+      highlightCorrectAnswer();
+      
+      setTimeout(() => {
+        isShowingAnswer = false;
+        
+        if (currentQuestionIndex < 23) {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          confirmBtn.disabled = true;
+        } else {
+          finishTest();
+        }
+      }, 2000);
+    }
+
+    // Завершение контрольной работы
+    function finishTest() {
+      // Подсчет результатов
+      totalScore = 0;
+      let questionScore = 0;
+      let problemScore = 0;
+      let correctQuestions = 0;
+      let correctProblems = 0;
+      
+      for (let i = 0; i < 24; i++) {
+        const item = shuffledQuestionsAndProblems[i];
+        if (userAnswers[i] === 'correct') {
+          totalScore += item.points;
+          if (item.points === 1) {
+            questionScore += 1;
+            correctQuestions++;
+          } else if (item.points === 3) {
+            problemScore += 3;
+            correctProblems++;
+          }
+        }
+      }
+      
+      const grade = getGrade(totalScore);
+      
+      // Показ полноэкранного результата
+      fullscreenGrade.textContent = grade;
+      fullscreenScore.textContent = totalScore;
+      fullscreenBreakdown.innerHTML = `
+        <div>Правильных вопросов: ${correctQuestions}/21 (${questionScore} баллов)</div>
+        <div>Правильных задач: ${correctProblems}/3 (${problemScore} баллов)</div>
+      `;
+      fullscreenResult.style.display = 'flex';
+      
+      // Обновление обычного блока результатов
+      scoreValue.textContent = totalScore;
+      gradeValue.textContent = grade;
+      pointsBreakdown.innerHTML = `
+        <div>Правильных вопросов: ${correctQuestions} из 21 (${questionScore} баллов)</div>
+        <div>Правильных задач: ${correctProblems} из 3 (${problemScore} баллов)</div>
+        <div>Всего баллов: ${totalScore} из 30</div>
+      `;
+      
+      // Отправка в Telegram
+      sendResultsToTelegram(totalScore, grade, correctQuestions, correctProblems, questionScore, problemScore);
+    }
+
+    // Получение оценки по баллам (максимум 30 баллов)
+    function getGrade(score) {
+      if (score >= 27) return 5;    // 90-100%
+      if (score >= 22) return 4;    // 70-89%
+      if (score >= 10) return 3;    // 50-69%
+      return 2;                     // менее 50%
+    }
+
+    // Отправка в Telegram
+    async function sendTelegramMessage(botToken, chatId, text) {
+      const resp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.description);
+    }
+
+    // Отправка результатов
+    async function sendResultsToTelegram(score, grade, correctQuestions, correctProblems, questionScore, problemScore) {
+      if (isSubmitted) return;
+      
+      const name = studentNameInput.value.trim();
+      const klass = studentClassSelect.value;
+      
+      if (!name || !klass) {
+        console.log('Имя или класс не заполнены, пропускаем отправку в Telegram');
+        return;
+      }
+      
+      try {
+        const now = new Date().toLocaleString('ru-RU');
+        
+        const answers = [];
+        for (let i = 0; i < 24; i++) {
+          const isCorrect = userAnswers[i] === 'correct';
+          const item = shuffledQuestionsAndProblems[i];
+          const type = item.points === 1 ? 'Вопрос' : 'Задача';
+          const points = isCorrect ? item.points : 0;
+          answers.push(`${i + 1}. ${type}: ${isCorrect ? '✅ Правильно' : '❌ Неправильно'} (${points} балл${points !== 1 ? 'а' : ''})`);
+        }
+        
+        const msg = `⚡ Результаты контрольной работы "Электризация тел. Электрический ток":
+
+👤 Студент: ${name}
+🏫 Класс: ${klass}
+🎯 Баллы: ${score}/30 (${Math.round(score/30*100)}%)
+📝 Оценка: ${grade}
+
+Детализация:
+📖 Правильных вопросов: ${correctQuestions}/21 (${questionScore} баллов)
+📐 Правильных задач: ${correctProblems}/3 (${problemScore} баллов)
+
+📅 Дата: ${now}`;
+        
+        await sendTelegramMessage(DEFAULT_BOT_TOKEN, DEFAULT_CHAT_ID, msg);
+        console.log('Результаты отправлены в Telegram');
+      } catch (err) {
+        console.error('Ошибка отправки в Telegram:', err);
+      }
+      
+      isSubmitted = true;
+    }
+
+    // Завершение полноэкранного режима
+    function finishFullScreen() {
+      fullscreenResult.style.display = 'none';
+      resultsDiv.style.display = 'block';
+      
+      telegramStatus.textContent = 'Результаты отправлены учителю!';
+      telegramStatus.className = 'success';
+      telegramStatus.style.display = 'block';
+      
+      setTimeout(() => {
+        telegramStatus.style.display = 'none';
+        window.location.href = "../index.html";
+      }, 5000);
+    }
+
+    // Сброс контрольной работы
+    function resetAll() {
+      if (!confirm('Сбросить всю контрольную работу? Весь прогресс будет потерян.')) return;
+      
+      studentInfoSection.style.display = 'block';
+      testContent.style.display = 'none';
+      
+      studentNameInput.value = '';
+      studentClassSelect.value = '';
+    }
+
+    // Валидация формы
+    function validateForm() {
+      const name = studentNameInput.value.trim();
+      const klass = studentClassSelect.value;
+      if (!name) { alert('Введите имя'); return false; }
+      if (!klass) { alert('Выберите класс'); return false; }
+      return true;
+    }
+
+    // Начало контрольной работы
+    function startTest() {
+      if (!validateForm()) return;
+      
+      studentInfoSection.style.display = 'none';
+      testContent.style.display = 'block';
+      
+      initTest();
+    }
+
+    // Инициализация
+    window.onload = function () {
+      startTestBtn.addEventListener('click', startTest);
+      confirmBtn.addEventListener('click', confirmAnswer);
+      resetBtn.addEventListener('click', resetAll);
+      finishBtn.addEventListener('click', finishFullScreen);
+      
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fullscreenResult.style.display === 'flex') {
+          finishFullScreen();
+        }
+      });
+    };
+  </script>
+</body>
+</html>
