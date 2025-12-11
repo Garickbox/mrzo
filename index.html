@@ -22,6 +22,40 @@
             align-items: center;
         }
         
+        /* Снежинки */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            filter: blur(0.5px);
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 0.8;
+            }
+            70% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
         .container {
             max-width: 500px;
             width: 100%;
@@ -29,6 +63,8 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         
         .header {
@@ -36,6 +72,62 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Фигуры в шапке */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        .float-item {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 28px;
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        
+        .float-item:nth-child(1) {
+            top: 20%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+        
+        .float-item:nth-child(2) {
+            top: 60%;
+            right: 20%;
+            animation-delay: 2s;
+        }
+        
+        .float-item:nth-child(3) {
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        .float-item:nth-child(4) {
+            top: 40%;
+            right: 15%;
+            animation-delay: 6s;
+        }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg) scale(1); 
+            }
+            33% { 
+                transform: translateY(-20px) rotate(120deg) scale(1.1); 
+            }
+            66% { 
+                transform: translateY(10px) rotate(240deg) scale(0.9); 
+            }
         }
         
         .school-name {
@@ -65,12 +157,6 @@
             margin-bottom: 20px;
         }
         
-        .welcome-text {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #555;
-        }
-        
         .test-section {
             background: #f8f9fa;
             border-radius: 15px;
@@ -88,10 +174,6 @@
             gap: 10px;
         }
         
-        .test-title i {
-            color: #34c759;
-        }
-        
         .test-input {
             width: 100%;
             padding: 15px;
@@ -107,29 +189,74 @@
             border-color: #4b6cb7;
         }
         
+        /* 3D Градиентная кнопка */
         .open-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            background: linear-gradient(135deg, 
+                #2c3e50 0%, 
+                #3498db 25%, 
+                #4a6fa5 50%, 
+                #3498db 75%, 
+                #2c3e50 100%);
+            background-size: 300% 300%;
             color: white;
             border: none;
             border-radius: 10px;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            box-shadow: 
+                0 8px 0 #1a252f,
+                0 12px 25px rgba(52, 152, 219, 0.3);
+            animation: gradientMove 4s ease infinite;
         }
         
+        /* 3D эффект кнопки */
+        .open-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(to bottom, 
+                rgba(255, 255, 255, 0.3), 
+                rgba(255, 255, 255, 0.1));
+            border-radius: 10px 10px 0 0;
+            z-index: 2;
+        }
+        
+        /* Эффект свечения при наведении */
         .open-button:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 0 #1a252f,
+                0 15px 30px rgba(52, 152, 219, 0.4);
+            animation: gradientMove 2s ease infinite;
         }
         
+        /* Эффект нажатия */
         .open-button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 0 #1a252f,
+                0 6px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.1s;
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .kumir-note {
@@ -141,10 +268,6 @@
             background: #e8f4ff;
             border-radius: 8px;
             border-left: 4px solid #4b6cb7;
-        }
-        
-        .kumir-note i {
-            color: #4b6cb7;
         }
         
         @media (max-width: 480px) {
@@ -171,9 +294,20 @@
     </style>
 </head>
 <body>
+    <!-- 70 снежинок -->
+    <div class="snowflakes" id="snowflakes"></div>
+    
     <div class="container">
         <!-- Шапка -->
         <div class="header">
+            <!-- Фигуры в шапке -->
+            <div class="floating-elements">
+                <div class="float-item"><i class="fas fa-snowflake"></i></div>
+                <div class="float-item"><i class="fas fa-star"></i></div>
+                <div class="float-item"><i class="fas fa-circle"></i></div>
+                <div class="float-item"><i class="fas fa-gem"></i></div>
+            </div>
+            
             <div class="school-name">ВЫСОКОВСКАЯ ШКОЛА №25</div>
             <div class="school-subtitle">Платформа для тестирования учеников</div>
         </div>
@@ -183,7 +317,6 @@
             <!-- Приветствие -->
             <div class="welcome-section">
                 <div class="welcome-title">Добро пожаловать!</div>
-                
             </div>
             
             <!-- Форма теста -->
@@ -210,7 +343,6 @@
     <script>
         // Автоматическое приведение к нижнему регистру и разрешение только букв и цифр
         document.getElementById('testName').addEventListener('input', function(e) {
-            // Приводим к нижнему регистру и оставляем только буквы и цифры
             this.value = this.value.toLowerCase().replace(/[^a-z0-9]/g, '');
         });
 
@@ -244,7 +376,60 @@
         // Фокус на поле ввода при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('testName').focus();
+            createSnowflakes();
         });
+        
+        // Создание снежинок
+        function createSnowflakes() {
+            const snowflakesContainer = document.getElementById('snowflakes');
+            const snowflakeCount = 70;
+            
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                
+                // Случайные параметры
+                const size = Math.random() * 8 + 2;
+                const left = Math.random() * 100;
+                const opacity = Math.random() * 0.8 + 0.2;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 10;
+                const blur = Math.random() * 2;
+                const startX = Math.random() * 100 - 50;
+                
+                snowflake.style.width = `${size}px`;
+                snowflake.style.height = `${size}px`;
+                snowflake.style.left = `${left}vw`;
+                snowflake.style.opacity = opacity;
+                snowflake.style.filter = `blur(${blur}px)`;
+                snowflake.style.animationDuration = `${duration}s`;
+                snowflake.style.animationDelay = `${delay}s`;
+                
+                // Добавляем индивидуальную траекторию
+                const animationName = `fall${i}`;
+                const styleSheet = document.styleSheets[0];
+                
+                const keyframes = `
+                @keyframes ${animationName} {
+                    0% {
+                        transform: translateY(-100px) translateX(${startX}px) rotate(0deg);
+                        opacity: ${opacity};
+                    }
+                    70% {
+                        opacity: ${opacity};
+                    }
+                    100% {
+                        transform: translateY(100vh) translateX(${startX + Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg);
+                        opacity: 0;
+                    }
+                }`;
+                
+                styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+                snowflake.style.animationName = animationName;
+                
+                snowflakesContainer.appendChild(snowflake);
+            }
+        }
     </script>
     
     <!-- Font Awesome для иконок -->
