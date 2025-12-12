@@ -11,11 +11,11 @@ let isShowingAnswer = false;
 let currentShuffledOptions = [];
 
 // Переменные для отслеживания использования пасхалок
-let clipboardAttempts = 0;      // Количество попыток копирования
-let tabSwitchAttempts = 0;      // Количество переключений вкладок
-let cheatBlockTimeouts = 0;     // Количество срабатываний античит системы
-let clipboardBlocked = false;   // Была ли блокировка копирования
-let antiCheatTriggered = false; // Срабатывала ли античит система
+let clipboardAttempts = 0;
+let tabSwitchAttempts = 0;
+let cheatBlockTimeouts = 0;
+let clipboardBlocked = false;
+let antiCheatTriggered = false;
 
 // Кэшируем DOM
 const progressBar = document.getElementById('progress-bar');
@@ -91,7 +91,6 @@ document.addEventListener('copy', function(e) {
     e.clipboardData.setData('text/plain', randomMessage);
     e.preventDefault();
     
-    // Фиксируем попытку копирования
     clipboardAttempts++;
     clipboardBlocked = true;
     
@@ -104,11 +103,8 @@ document.addEventListener('keydown', function(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
     if (!isInsideInput(document.activeElement)) {
       e.preventDefault();
-      
-      // Фиксируем попытку выделения всего текста
       clipboardAttempts++;
       clipboardBlocked = true;
-      
       console.log(`Попытка выделения всего текста заблокирована (${clipboardAttempts} раз)`);
     }
   }
@@ -118,11 +114,8 @@ document.addEventListener('keydown', function(e) {
 document.addEventListener('dragstart', function(e) {
   if (!isInsideInput(e.target)) {
     e.preventDefault();
-    
-    // Фиксируем попытку перетаскивания
     clipboardAttempts++;
     clipboardBlocked = true;
-    
     console.log(`Попытка перетаскивания текста заблокирована (${clipboardAttempts} раз)`);
   }
 });
@@ -163,7 +156,6 @@ function formatTime(seconds) {
 }
 
 function showAntiCheat() {
-  // Не показываем античит окно, если тест еще не начат или уже завершен
   if (studentInfoSection.style.display !== 'none' || 
       fullscreenResult.style.display === 'flex' ||
       resultsDiv.style.display === 'block') {
@@ -204,7 +196,18 @@ function startBlockTimer() {
     
     if (remainingTime <= 10) {
       const timer = document.getElementById('countdownTimer');
-      timer.style.animation = remainingTime % 2 === 0 ? 'none' : 'pulse 0.5s';
+      timer.classList.remove('pulse');
+      timer.classList.remove('pulse-strong');
+      
+      if (remainingTime <= 5) {
+        timer.classList.add('pulse-strong');
+      } else {
+        timer.classList.add('pulse');
+      }
+    } else {
+      const timer = document.getElementById('countdownTimer');
+      timer.classList.remove('pulse');
+      timer.classList.remove('pulse-strong');
     }
     
     if (remainingTime <= 0) {
@@ -247,12 +250,11 @@ document.getElementById('continueBtn').addEventListener('click', function() {
 // Отслеживание ухода/возврата на вкладку
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    // Пользователь ушел с вкладки
     showAntiCheat();
   }
 });
 
-// Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+// Функция для перемешивания массива
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -263,16 +265,10 @@ function shuffleArray(array) {
 
 // Инициализация контрольной работы
 function initTest() {
-  // Выбираем 21 случайный вопрос из банка (из 50)
   const selectedQuestions = shuffleArray([...questionsBank]).slice(0, 21);
-  
-  // Выбираем 3 случайные задачи из банка (из 30)
   const selectedProblems = shuffleArray([...problemsBank]).slice(0, 3);
   
-  // Объединяем вопросы и задачи
   shuffledQuestionsAndProblems = [...selectedQuestions, ...selectedProblems];
-  
-  // Перемешиваем порядок
   shuffledQuestionsAndProblems = shuffleArray(shuffledQuestionsAndProblems);
   
   currentQuestionIndex = 0;
@@ -282,7 +278,6 @@ function initTest() {
   isShowingAnswer = false;
   currentShuffledOptions = [];
   
-  // Сбрасываем статистику пасхалок
   clipboardAttempts = 0;
   tabSwitchAttempts = 0;
   cheatBlockTimeouts = 0;
@@ -301,7 +296,6 @@ function showQuestion(index) {
   const item = shuffledQuestionsAndProblems[index];
   questionText.textContent = item.text;
   
-  // Устанавливаем тип задания
   if (item.points === 3) {
     questionType.textContent = "Задача (3 балла)";
     questionType.className = "question-type problem-type";
@@ -310,7 +304,6 @@ function showQuestion(index) {
     questionType.className = "question-type";
   }
   
-  // Перемешиваем варианты ответов для текущего вопроса
   currentShuffledOptions = shuffleArray([...item.options]);
   
   optionsContainer.innerHTML = '';
@@ -361,7 +354,7 @@ function highlightCorrectAnswer() {
   });
 }
 
-// Обновление прогресса (счетчик вопросов)
+// Обновление прогресса
 function updateProgress() {
   const percent = ((currentQuestionIndex + 1) / 24) * 100;
   progressBar.style.width = `${percent}%`;
@@ -398,7 +391,6 @@ function confirmAnswer() {
 
 // Завершение контрольной работы
 function finishTest() {
-  // Подсчет результатов
   totalScore = 0;
   let questionScore = 0;
   let problemScore = 0;
@@ -421,7 +413,6 @@ function finishTest() {
   
   const grade = getGrade(totalScore);
   
-  // Показ полноэкранного результата
   fullscreenGrade.textContent = grade;
   fullscreenScore.textContent = totalScore;
   fullscreenBreakdown.innerHTML = `
@@ -430,7 +421,6 @@ function finishTest() {
   `;
   fullscreenResult.style.display = 'flex';
   
-  // Обновление обычного блока результатов
   scoreValue.textContent = totalScore;
   gradeValue.textContent = grade;
   pointsBreakdown.innerHTML = `
@@ -439,16 +429,15 @@ function finishTest() {
     <div>Всего баллов: ${totalScore} из 30</div>
   `;
   
-  // Отправка в Telegram
   sendResultsToTelegram(totalScore, grade, correctQuestions, correctProblems, questionScore, problemScore);
 }
 
-// Получение оценки по баллам (максимум 30 баллов)
+// Получение оценки по баллам
 function getGrade(score) {
-  if (score >= 27) return 5;    // 90-100%
-  if (score >= 22) return 4;    // 70-89%
-  if (score >= 10) return 3;    // 50-69%
-  return 2;                     // менее 50%
+  if (score >= 27) return 5;
+  if (score >= 22) return 4;
+  if (score >= 10) return 3;
+  return 2;
 }
 
 // Отправка в Telegram
@@ -478,7 +467,6 @@ async function sendResultsToTelegram(score, grade, correctQuestions, correctProb
   try {
     const now = new Date().toLocaleString('ru-RU');
     
-    // Подготавливаем статистику пасхалок
     const easterEggsStats = [];
     
     if (clipboardBlocked) {
@@ -496,7 +484,6 @@ async function sendResultsToTelegram(score, grade, correctQuestions, correctProb
       easterEggsStats.push(`🚨 Античит система: Не срабатывала ✅`);
     }
     
-    // Создаем сообщение с учетом пасхалок
     let msg = `⚡ Результаты контрольной работы "Электризация тел. Электрический ток":
 
 👤 Студент: ${name}
@@ -510,7 +497,6 @@ async function sendResultsToTelegram(score, grade, correctQuestions, correctProb
 
 `;
 
-    // Добавляем статистику пасхалок только если они срабатывали
     if (clipboardBlocked || antiCheatTriggered) {
       msg += `
 🚨 **Статистика антижульничания:**
@@ -534,33 +520,65 @@ async function sendResultsToTelegram(score, grade, correctQuestions, correctProb
   isSubmitted = true;
 }
 
-// Завершение полноэкранного режима (ИСПРАВЛЕНО ПЕРЕНАПРАВЛЕНИЕ)
+// Завершение полноэкранного режима - ИСПРАВЛЕННАЯ ВЕРСИЯ
 function finishFullScreen() {
-  fullscreenResult.style.display = 'none';
-  resultsDiv.style.display = 'block';
+  console.log('=== finishFullScreen вызвана ===');
   
-  // ПОПРАВКА: Убедимся, что resultsDiv виден
-  testContent.style.display = 'block';
+  // Закрываем античит-окно, если открыто
+  const blockerOverlay = document.getElementById('blockerOverlay');
+  const anticheatModal = document.getElementById('anticheatModal');
   
-  // ПОПРАВКА: Устанавливаем текст для telegramStatus
-  telegramStatus.textContent = 'Результаты отправлены учителю!';
-  telegramStatus.className = 'success';
-  telegramStatus.style.display = 'block';
+  if (blockerOverlay && blockerOverlay.style.display === 'block') {
+    blockerOverlay.style.display = 'none';
+  }
+  if (anticheatModal && anticheatModal.style.display === 'block') {
+    anticheatModal.style.display = 'none';
+  }
+  
+  // Скрываем полноэкранный результат
+  if (fullscreenResult) {
+    fullscreenResult.style.display = 'none';
+  }
+  
+  // Показываем блок результатов
+  if (resultsDiv) {
+    resultsDiv.style.display = 'block';
+    testContent.style.display = 'block';
+  }
+  
+  // Показываем сообщение о статусе отправки
+  if (telegramStatus) {
+    telegramStatus.textContent = 'Результаты отправлены учителю!';
+    telegramStatus.className = 'success';
+    telegramStatus.style.display = 'block';
+  }
+  
+  console.log('Сообщение показано, начинаю таймер для перенаправления...');
   
   // Через 5 секунд перенаправляем на главную страницу
   setTimeout(() => {
-    telegramStatus.style.display = 'none';
-    // Используем абсолютный путь для гарантированного перехода
-    // Проверяем, находимся ли мы в папке test
-    const currentPath = window.location.pathname;
+    console.log('Таймер сработал, перенаправляю...');
     
-    if (currentPath.includes('test') || currentPath.includes('ftesttokv3')) {
-      // Если в папке test, поднимаемся на уровень выше
+    // Определяем путь для перенаправления
+    const currentPath = window.location.pathname;
+    console.log('Текущий путь:', currentPath);
+    
+    if (currentPath.includes('/test/') || currentPath.includes('ftesttokv3')) {
+      // Если находимся в папке test, поднимаемся на уровень выше
       window.location.href = '../index.html';
     } else {
-      // Иначе считаем, что index.html в той же папке
+      // Если в корне, просто index.html
       window.location.href = 'index.html';
     }
+    
+    // На всякий случай - дополнительный таймер на случай если перенаправление не сработает
+    setTimeout(() => {
+      if (window.location.href.indexOf('index.html') === -1) {
+        console.log('Перенаправление не сработало, пробую принудительно...');
+        window.location.replace('../index.html');
+      }
+    }, 2000);
+    
   }, 5000);
 }
 
@@ -574,10 +592,8 @@ function resetAll() {
   studentNameInput.value = '';
   studentClassSelect.value = '';
   
-  // Закрыть античит окно, если открыто
   closeAntiCheat();
   
-  // Сброс статистики пасхалок
   clipboardAttempts = 0;
   tabSwitchAttempts = 0;
   cheatBlockTimeouts = 0;
@@ -606,14 +622,35 @@ function startTest() {
 
 // Инициализация
 window.onload = function () {
-  startTestBtn.addEventListener('click', startTest);
-  confirmBtn.addEventListener('click', confirmAnswer);
-  resetBtn.addEventListener('click', resetAll);
-  finishBtn.addEventListener('click', finishFullScreen);
+  console.log('Скрипт загружен, инициализирую обработчики...');
+  
+  if (startTestBtn) startTestBtn.addEventListener('click', startTest);
+  if (confirmBtn) confirmBtn.addEventListener('click', confirmAnswer);
+  if (resetBtn) resetBtn.addEventListener('click', resetAll);
+  
+  // Проверяем, что кнопка finishBtn существует
+  if (finishBtn) {
+    console.log('Кнопка finishBtn найдена, добавляю обработчик');
+    finishBtn.addEventListener('click', finishFullScreen);
+  } else {
+    console.error('Кнопка finishBtn не найдена! Проверьте HTML');
+  }
   
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && fullscreenResult.style.display === 'flex') {
+    if (e.key === 'Escape' && fullscreenResult && fullscreenResult.style.display === 'flex') {
       finishFullScreen();
     }
   });
+  
+  // Проверка всех элементов для отладки
+  console.log('Элементы DOM:');
+  console.log('- startTestBtn:', !!startTestBtn);
+  console.log('- confirmBtn:', !!confirmBtn);
+  console.log('- resetBtn:', !!resetBtn);
+  console.log('- finishBtn:', !!finishBtn);
+  console.log('- resultsDiv:', !!resultsDiv);
+  console.log('- telegramStatus:', !!telegramStatus);
+  console.log('- fullscreenResult:', !!fullscreenResult);
+  console.log('- anticheatModal:', !!document.getElementById('anticheatModal'));
+  console.log('- blockerOverlay:', !!document.getElementById('blockerOverlay'));
 };

@@ -51,7 +51,11 @@
         </div>
       </div>
 
-      <div id="results">
+      <div class="button-container">
+        <button class="reset-btn" id="reset-btn">Сбросить тест</button>
+      </div>
+
+      <div id="results" style="display: none;">
         <h2>Результаты контрольной работы</h2>
         <div class="score-display">Набрано баллов: <span id="score-value">0</span> из 30</div>
         <div class="points-breakdown" id="points-breakdown"></div>
@@ -68,6 +72,7 @@
       <div class="fullscreen-grade" id="fullscreen-grade">5</div>
       <p style="margin: 15px 0; color: #666;">Набрано баллов: <span id="fullscreen-score">0</span> из 30</p>
       <div id="fullscreen-breakdown" style="margin: 15px 0; color: #555; font-size: 14px;"></div>
+      <!-- УБЕДИТЕСЬ, ЧТО ЭТА КНОПКА ЕСТЬ -->
       <button class="fullscreen-btn" id="finish-btn">Завершить</button>
     </div>
   </div>
@@ -173,5 +178,62 @@
   
   <!-- Основной скрипт -->
   <script src="script.js"></script>
+
+  <!-- Дополнительный скрипт для отладки -->
+  <script>
+    // Дополнительная проверка для отладки
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('=== ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ===');
+      console.log('Элементы найдены:');
+      console.log('finish-btn:', document.getElementById('finish-btn'));
+      console.log('fullscreen-result:', document.getElementById('fullscreen-result'));
+      console.log('telegram-status:', document.getElementById('telegram-status'));
+      console.log('anticheatModal:', document.getElementById('anticheatModal'));
+      console.log('blockerOverlay:', document.getElementById('blockerOverlay'));
+      
+      // Принудительно показываем, что кнопка работает
+      const finishBtn = document.getElementById('finish-btn');
+      if (finishBtn) {
+        console.log('Кнопка finish-btn найдена, тестирую клик...');
+        // Сохраняем оригинальный обработчик
+        const originalHandler = finishBtn.onclick;
+        
+        // Добавляем дополнительный обработчик для отладки
+        finishBtn.addEventListener('click', function() {
+          console.log('=== КЛИК ПО КНОПКЕ finish-btn ЗАФИКСИРОВАН ===');
+          console.log('Время клика:', new Date().toLocaleTimeString());
+          console.log('URL страницы:', window.location.href);
+          console.log('fullscreen-result display:', document.getElementById('fullscreen-result').style.display);
+        });
+        
+        console.log('Обработчик finishBtn добавлен успешно');
+      } else {
+        console.error('ОШИБКА: Кнопка finish-btn не найдена в DOM!');
+      }
+      
+      // Проверяем, есть ли index.html на уровень выше
+      console.log('Проверка доступности index.html...');
+      fetch('../index.html', { method: 'HEAD' })
+        .then(response => {
+          console.log('index.html доступен?', response.ok);
+        })
+        .catch(error => {
+          console.log('index.html не доступен:', error.message);
+        });
+    });
+    
+    // Функция для проверки доступности index.html (можно вызвать в консоли)
+    window.checkIndexPage = function() {
+      fetch('../index.html', { method: 'HEAD' })
+        .then(response => {
+          alert('index.html доступен: ' + response.ok);
+          console.log('Статус index.html:', response.status, response.ok);
+        })
+        .catch(error => {
+          alert('Ошибка при проверке index.html: ' + error.message);
+          console.error('Ошибка проверки:', error);
+        });
+    };
+  </script>
 </body>
 </html>
