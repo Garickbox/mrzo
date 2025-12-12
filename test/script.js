@@ -361,11 +361,11 @@ function highlightCorrectAnswer() {
   });
 }
 
-// Обновление прогресса
+// Обновление прогресса (счетчик вопросов)
 function updateProgress() {
-  const percent = (currentQuestionIndex / 24) * 100;
+  const percent = ((currentQuestionIndex + 1) / 24) * 100;
   progressBar.style.width = `${percent}%`;
-  progressText.textContent = `Задание ${currentQuestionIndex + 1} из 24`;
+  progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из 24`;
 }
 
 // Подтверждение ответа
@@ -534,7 +534,7 @@ async function sendResultsToTelegram(score, grade, correctQuestions, correctProb
   isSubmitted = true;
 }
 
-// Завершение полноэкранного режима
+// Завершение полноэкранного режима (ИСПРАВЛЕНО ПЕРЕНАПРАВЛЕНИЕ)
 function finishFullScreen() {
   fullscreenResult.style.display = 'none';
   resultsDiv.style.display = 'block';
@@ -543,12 +543,17 @@ function finishFullScreen() {
   telegramStatus.className = 'success';
   telegramStatus.style.display = 'block';
   
+  // Через 5 секунд перенаправляем на главную страницу
   setTimeout(() => {
     telegramStatus.style.display = 'none';
-    window.location.href = "../index.html";
+    // Используем абсолютный путь для гарантированного перехода
+    if (window.location.pathname.includes('/test/') || window.location.pathname.includes('/ftesttokv3')) {
+      window.location.href = '../index.html'; // Если в папке test
+    } else {
+      window.location.href = 'index.html';    // Если в корне
+    }
   }, 5000);
 }
-
 // Сброс контрольной работы
 function resetAll() {
   if (!confirm('Сбросить всю контрольную работу? Весь прогресс будет потерян.')) return;
