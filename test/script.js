@@ -539,6 +539,10 @@ function finishFullScreen() {
   fullscreenResult.style.display = 'none';
   resultsDiv.style.display = 'block';
   
+  // ПОПРАВКА: Убедимся, что resultsDiv виден
+  testContent.style.display = 'block';
+  
+  // ПОПРАВКА: Устанавливаем текст для telegramStatus
   telegramStatus.textContent = 'Результаты отправлены учителю!';
   telegramStatus.className = 'success';
   telegramStatus.style.display = 'block';
@@ -547,13 +551,19 @@ function finishFullScreen() {
   setTimeout(() => {
     telegramStatus.style.display = 'none';
     // Используем абсолютный путь для гарантированного перехода
-    if (window.location.pathname.includes('/test/') || window.location.pathname.includes('/ftesttokv3')) {
-      window.location.href = '../index.html'; // Если в папке test
+    // Проверяем, находимся ли мы в папке test
+    const currentPath = window.location.pathname;
+    
+    if (currentPath.includes('test') || currentPath.includes('ftesttokv3')) {
+      // Если в папке test, поднимаемся на уровень выше
+      window.location.href = '../index.html';
     } else {
-      window.location.href = 'index.html';    // Если в корне
+      // Иначе считаем, что index.html в той же папке
+      window.location.href = 'index.html';
     }
   }, 5000);
 }
+
 // Сброс контрольной работы
 function resetAll() {
   if (!confirm('Сбросить всю контрольную работу? Весь прогресс будет потерян.')) return;
