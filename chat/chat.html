@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Школьный чат</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1f35 0%, #2d3748 100%);
+            min-height: 100vh;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .chat-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .chat-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .chat-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        
+        .chat-tab {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .chat-tab.active {
+            background: white;
+            border-bottom-color: #4b6cb7;
+            color: #4b6cb7;
+            font-weight: 600;
+        }
+        
+        .chat-tab .unread-badge {
+            display: inline-block;
+            background: #ff4757;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.own {
+            margin-left: auto;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .message.own .message-content {
+            background: #4b6cb7;
+            color: white;
+            border-color: #3a4f8c;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .message.own .message-header {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            color: #4b6cb7;
+        }
+        
+        .message.own .message-sender {
+            color: white;
+        }
+        
+        .message-time {
+            color: #999;
+        }
+        
+        .message.own .message-time {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .message-text {
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        
+        .message-system {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .system-message {
+            display: inline-block;
+            background: rgba(75, 108, 183, 0.1);
+            color: #4b6cb7;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input:focus {
+            border-color: #4b6cb7;
+        }
+        
+        .chat-send {
+            background: linear-gradient(135deg, #4b6cb7 0%, #667eea 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        
+        .chat-send:hover {
+            transform: translateY(-2px);
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .login-button {
+            background: linear-gradient(135deg, #4b6cb7 0%, #667eea 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .typing-indicator {
+            padding: 10px;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="back-button" id="backButton">←</button>
+            <div class="chat-title">Школьный чат</div>
+            <div class="chat-subtitle" id="chatSubtitle">Загрузка...</div>
+        </div>
+        
+        <div class="chat-tabs" id="chatTabs">
+            <!-- Вкладки будут добавляться динамически -->
+        </div>
+        
+        <div class="messages-container" id="messagesContainer">
+            <div class="loading">Загрузка сообщений...</div>
+        </div>
+        
+        <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Введите сообщение..." maxlength="500">
+            <button class="chat-send" id="sendButton">Отправить</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <script type="module">
+        // Firebase конфигурация
+        const firebaseConfig = {
+            apiKey: "AIzaSyCox_zyQP5GMa5W9Tw2cUoBtvkQC-PcrsE",
+            authDomain: "school-test-mrzo25.firebaseapp.com",
+            projectId: "school-test-mrzo25",
+            storageBucket: "school-test-mrzo25.firebasestorage.app",
+            messagingSenderId: "143703431012",
+            appId: "1:143703431012:web:b02bec2f8b28ce6e2acc71",
+            measurementId: "G-MDJ60H5TBC"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        class SchoolChat {
+            constructor() {
+                this.currentChat = 'general';
+                this.user = null;
+                this.unsubscribeFunctions = {};
+                this.unreadCounts = {
+                    general: 0,
+                    7: 0,
+                    8: 0,
+                    9: 0,
+                    10: 0,
+                    11: 0
+                };
+                this.lastReadTimes = {};
+                this.init();
+            }
+            
+            async init() {
+                this.setupEventListeners();
+                await this.checkUser();
+                this.setupChatTabs();
+                this.loadChat('general');
+                
+                // Загружаем непрочитанные сообщения из localStorage
+                this.loadUnreadCounts();
+                this.updateUnreadBadge();
+            }
+            
+            async checkUser() {
+                // Проверяем localStorage на наличие выбранного ученика
+                const savedStudent = localStorage.getItem('lastStudent');
+                if (savedStudent) {
+                    try {
+                        this.user = JSON.parse(savedStudent);
+                        document.getElementById('chatInputContainer').style.display = 'flex';
+                        document.getElementById('chatSubtitle').textContent = 
+                            `${this.user.firstName} ${this.user.lastName} (${this.user.class} класс)`;
+                        console.log('Пользователь чата:', this.user);
+                    } catch (e) {
+                        this.showLoginPrompt();
+                    }
+                } else {
+                    this.showLoginPrompt();
+                }
+            }
+            
+            showLoginPrompt() {
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = `
+                    <div class="login-prompt">
+                        <h3>Для участия в чате требуется идентификация</h3>
+                        <p>Вернитесь на главную страницу и выберите ученика</p>
+                        <button class="login-button" id="goToMainButton">Вернуться на главную</button>
+                    </div>
+                `;
+                document.getElementById('goToMainButton').addEventListener('click', () => {
+                    window.location.href = '../index.html';
+                });
+            }
+            
+            setupEventListeners() {
+                document.getElementById('backButton').addEventListener('click', () => {
+                    window.location.href = '../index.html';
+                });
+                
+                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
+                
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                
+                // Отслеживаем видимость окна для обновления непрочитанных
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        // Пользователь вернулся в чат - сбрасываем непрочитанные для текущего чата
+                        this.markChatAsRead(this.currentChat);
+                    }
+                });
+            }
+            
+            setupChatTabs() {
+                const tabs = document.getElementById('chatTabs');
+                const chatRooms = [
+                    { id: 'general', name: 'Общий чат' },
+                    { id: '7', name: '7 класс' },
+                    { id: '8', name: '8 класс' },
+                    { id: '9', name: '9 класс' },
+                    { id: '10', name: '10 класс' },
+                    { id: '11', name: '11 класс' }
+                ];
+                
+                tabs.innerHTML = '';
+                chatRooms.forEach(room => {
+                    const tab = document.createElement('button');
+                    tab.className = 'chat-tab';
+                    tab.dataset.chat = room.id;
+                    tab.innerHTML = `
+                        ${room.name}
+                        ${this.unreadCounts[room.id] > 0 ? 
+                            `<span class="unread-badge">${this.unreadCounts[room.id]}</span>` : ''}
+                    `;
+                    
+                    tab.addEventListener('click', () => {
+                        this.loadChat(room.id);
+                        // Помечаем чат как прочитанный при переключении
+                        this.markChatAsRead(room.id);
+                    });
+                    
+                    tabs.appendChild(tab);
+                });
+                
+                // Обновляем бейджи на вкладках
+                this.updateTabBadges();
+            }
+            
+            updateTabBadges() {
+                document.querySelectorAll('.chat-tab').forEach(tab => {
+                    const chatId = tab.dataset.chat;
+                    const badge = tab.querySelector('.unread-badge');
+                    
+                    if (this.unreadCounts[chatId] > 0) {
+                        if (!badge) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'unread-badge';
+                            newBadge.textContent = this.unreadCounts[chatId];
+                            tab.appendChild(newBadge);
+                        } else {
+                            badge.textContent = this.unreadCounts[chatId];
+                        }
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                });
+            }
+            
+            updateUnreadBadge() {
+                const totalUnread = Object.values(this.unreadCounts).reduce((a, b) => a + b, 0);
+                
+                // Отправляем сообщение в родительское окно для обновления бейджа
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'CHAT_UNREAD_UPDATE',
+                        count: totalUnread
+                    }, '*');
+                }
+                
+                // Сохраняем в localStorage для индекса
+                localStorage.setItem('chatUnreadCount', totalUnread);
+                
+                // Также сохраняем детализированные счетчики
+                localStorage.setItem('chatUnreadDetails', JSON.stringify(this.unreadCounts));
+            }
+            
+            async loadChat(chatId) {
+                this.currentChat = chatId;
+                
+                // Обновляем активную вкладку
+                document.querySelectorAll('.chat-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.dataset.chat === chatId) {
+                        tab.classList.add('active');
+                    }
+                });
+                
+                // Обновляем заголовок
+                const roomNames = {
+                    general: 'Общий чат',
+                    7: 'Чат 7 класса',
+                    8: 'Чат 8 класса',
+                    9: 'Чат 9 класса',
+                    10: 'Чат 10 класса',
+                    11: 'Чат 11 класса'
+                };
+                
+                document.getElementById('chatSubtitle').textContent = roomNames[chatId];
+                
+                // Очищаем сообщения
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '<div class="loading">Загрузка сообщений...</div>';
+                container.scrollTop = 0;
+                
+                // Отписываемся от предыдущих обновлений
+                if (this.unsubscribeFunctions[chatId]) {
+                    this.unsubscribeFunctions[chatId]();
+                }
+                
+                // Подписываемся на новые сообщения
+                this.unsubscribeFunctions[chatId] = db.collection('chats')
+                    .doc(chatId)
+                    .collection('messages')
+                    .orderBy('timestamp', 'desc')
+                    .limit(50)
+                    .onSnapshot((snapshot) => {
+                        this.displayMessages(snapshot.docs.reverse());
+                        
+                        // Помечаем чат как прочитанный при загрузке
+                        this.markChatAsRead(chatId);
+                    }, (error) => {
+                        console.error('Ошибка загрузки чата:', error);
+                        container.innerHTML = '<div class="login-prompt">Ошибка загрузки чата</div>';
+                    });
+                
+                // Если это не текущий активный чат, добавляем сообщения в счетчик непрочитанных
+                // Это делается через другой слушатель, который считает новые сообщения
+                this.setupUnreadListener(chatId);
+            }
+            
+            setupUnreadListener(chatId) {
+                // Запоминаем время последнего чтения
+                if (!this.lastReadTimes[chatId]) {
+                    this.lastReadTimes[chatId] = Date.now();
+                    localStorage.setItem(`chat_last_read_${chatId}`, this.lastReadTimes[chatId]);
+                }
+                
+                // Слушаем только новые сообщения
+                db.collection('chats')
+                    .doc(chatId)
+                    .collection('messages')
+                    .where('timestamp', '>', this.lastReadTimes[chatId])
+                    .onSnapshot((snapshot) => {
+                        if (!document.hasFocus() && chatId !== this.currentChat) {
+                            // Если окно не в фокусе и это не текущий чат, увеличиваем счетчик
+                            this.unreadCounts[chatId] += snapshot.docChanges().length;
+                            this.updateTabBadges();
+                            this.updateUnreadBadge();
+                        }
+                    });
+            }
+            
+            markChatAsRead(chatId) {
+                // Помечаем все сообщения в чате как прочитанные
+                this.lastReadTimes[chatId] = Date.now();
+                localStorage.setItem(`chat_last_read_${chatId}`, this.lastReadTimes[chatId]);
+                
+                // Сбрасываем счетчик непрочитанных для этого чата
+                this.unreadCounts[chatId] = 0;
+                this.updateTabBadges();
+                this.updateUnreadBadge();
+            }
+            
+            displayMessages(messages) {
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    const systemMsg = document.createElement('div');
+                    systemMsg.className = 'message-system';
+                    systemMsg.innerHTML = '<div class="system-message">Нет сообщений. Будьте первым!</div>';
+                    container.appendChild(systemMsg);
+                    return;
+                }
+                
+                messages.forEach((doc) => {
+                    const message = doc.data();
+                    const messageDiv = this.createMessageElement(message);
+                    container.appendChild(messageDiv);
+                });
+                
+                // Прокручиваем вниз
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
+            
+            createMessageElement(message) {
+                const isOwn = this.user && 
+                    message.senderId === this.user.id && 
+                    message.senderClass === this.user.class;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isOwn ? 'own' : ''}`;
+                
+                const time = new Date(message.timestamp).toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${message.senderName}</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-text">${this.escapeHtml(message.text)}</div>
+                    </div>
+                `;
+                
+                return messageDiv;
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            async sendMessage() {
+                if (!this.user) {
+                    alert('Требуется идентификация для отправки сообщений');
+                    return;
+                }
+                
+                const input = document.getElementById('chatInput');
+                const text = input.value.trim();
+                
+                if (!text) return;
+                
+                // Проверяем, может ли пользователь писать в этот чат
+                if (this.currentChat !== 'general' && this.currentChat !== this.user.class.toString()) {
+                    alert('Вы можете писать только в общий чат и чат своего класса');
+                    return;
+                }
+                
+                const message = {
+                    text: text,
+                    senderId: this.user.id,
+                    senderName: `${this.user.firstName} ${this.user.lastName}`,
+                    senderClass: this.user.class,
+                    timestamp: Date.now(),
+                    chatId: this.currentChat
+                };
+                
+                try {
+                    // Добавляем сообщение в Firestore
+                    await db.collection('chats')
+                        .doc(this.currentChat)
+                        .collection('messages')
+                        .add(message);
+                    
+                    // Очищаем поле ввода
+                    input.value = '';
+                    input.focus();
+                    
+                } catch (error) {
+                    console.error('Ошибка отправки сообщения:', error);
+                    alert('Ошибка отправки сообщения');
+                }
+            }
+            
+            loadUnreadCounts() {
+                // Загружаем детализированные счетчики из localStorage
+                const savedDetails = localStorage.getItem('chatUnreadDetails');
+                if (savedDetails) {
+                    try {
+                        this.unreadCounts = JSON.parse(savedDetails);
+                    } catch (e) {
+                        console.log('Не удалось загрузить детали непрочитанных');
+                    }
+                }
+                
+                // Загружаем времена последнего чтения
+                const chatRooms = ['general', '7', '8', '9', '10', '11'];
+                chatRooms.forEach(room => {
+                    const lastRead = localStorage.getItem(`chat_last_read_${room}`);
+                    if (lastRead) {
+                        this.lastReadTimes[room] = parseInt(lastRead);
+                    } else {
+                        this.lastReadTimes[room] = Date.now();
+                    }
+                });
+            }
+        }
+        
+        // Инициализация чата при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            window.schoolChat = new SchoolChat();
+            
+            // При закрытии окна сбрасываем все непрочитанные для текущего пользователя
+            window.addEventListener('beforeunload', () => {
+                localStorage.setItem('chatUnreadCount', 0);
+                
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'CHAT_UNREAD_UPDATE',
+                        count: 0
+                    }, '*');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
