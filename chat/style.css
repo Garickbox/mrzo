@@ -58,8 +58,8 @@
 /* Адаптивность для чата */
 @media (max-width: 768px) {
     .chat-mini {
-        bottom: 15px;
-        left: 15px;
+        bottom: 20px;
+        left: 20px;
         width: 50px;
         height: 50px;
         font-size: 20px;
@@ -69,7 +69,19 @@
 /* Для мобильных устройств с маленькими экранами */
 @media (max-width: 480px) {
     .chat-mini {
-        bottom: 80px; /* Поднимаем выше, чтобы не мешать радио */
-        left: 15px;
+        bottom: 20px;
+        left: 20px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    /* Если есть радио, размещаем их симметрично */
+    .radio-mini {
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
     }
 }
