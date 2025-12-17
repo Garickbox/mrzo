@@ -2003,3 +2003,179 @@ body.test-body {
         font-size: 18px;
     }
 }
+/* ============ КОНТЕЙНЕР ДЛЯ ИКОНОК ВНИЗУ ============ */
+.bottom-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* ============ СТИЛИ ДЛЯ ЧАТА ПО ЦЕНТРУ ============ */
+.chat-mini-center {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(255, 255, 255, 0.15),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.chat-mini-center:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 
+        0 10px 25px rgba(76, 108, 183, 0.6),
+        0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.chat-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    font-size: 12px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(255, 71, 87, 0.3);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Стили для радио (справа снизу) */
+.radio-mini {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(255, 255, 255, 0.15),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.radio-mini:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 10px 25px rgba(76, 108, 183, 0.6),
+        0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.radio-panel {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    /* остальные стили остаются без изменений */
+}
+
+/* Адаптивность для чата и радио */
+@media (max-width: 768px) {
+    .chat-mini-center {
+        bottom: 15px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .radio-mini {
+        bottom: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .radio-panel {
+        bottom: 70px;
+        right: 15px;
+    }
+}
+
+/* Для мобильных устройств с маленькими экранами */
+@media (max-width: 480px) {
+    .chat-mini-center {
+        bottom: 10px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .radio-mini {
+        bottom: 10px;
+        right: 10px;
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .radio-panel {
+        bottom: 65px;
+        right: 10px;
+        min-width: 180px;
+        padding: 15px;
+    }
+}
+
+/* Для очень маленьких экранов (iPhone SE и подобные) */
+@media (max-width: 375px) {
+    .chat-mini-center {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+    
+    .radio-mini {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+}
+
+/* Убираем старый стиль .chat-mini если он есть */
+.chat-mini {
+    display: none;
+}
