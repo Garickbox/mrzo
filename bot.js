@@ -1,17 +1,19 @@
 const { Telegraf, Markup } = require('telegraf');
+require('dotenv').config();
+
 const { CONFIG, TestLoader, TestManager, FirebaseService, initializeFirebase } = require('./services');
 const STUDENTS_DB = require('./students');
 
-// Загрузка переменных окружения
-require('dotenv').config();
+// Используем токен из .env или из CONFIG
+const botToken = process.env.BOT_TOKEN || CONFIG.BOT_TOKEN;
 
-// Проверка обязательных переменных
-if (!process.env.BOT_TOKEN) {
-    console.error('❌ Ошибка: BOT_TOKEN не установлен в .env файле');
+if (!botToken) {
+    console.error('❌ Ошибка: BOT_TOKEN не найден!');
+    console.error('💡 Создайте файл .env с BOT_TOKEN=ваш_токен');
     process.exit(1);
 }
 
-const bot = new Telegraf(process.env.BOT_TOKEN || CONFIG.BOT_TOKEN);
+const bot = new Telegraf(botToken);
 const testLoader = new TestLoader();
 const testManager = new TestManager();
 const userStates = new Map();
@@ -405,7 +407,7 @@ async function startTestProcess(ctx, userId, testCode) {
             testCode 
         });
         
-        await ctx.reply('👤 *Идентификация ученика*\n\nВведите ваши данные в формате:\n`Фамилия Имя [Класс]`\n\n*Примеры:*\n`Иванов Иван 7`\n`Петрова Анна` (если не знаете класс)\n\n_Класс указывать необязательно, но это ускорит поиск_', {
+        await ctx.reply('👤 *Идентификация ученика*\n\nВведите ваши данные в формате:\n`Фамилия Имя [Класс]`\n\n*Примеры:*\n`Иванов Иван 7`\n`Петрова Анna` (если не знаете класс)\n\n_Класс указывать необязательно, но это ускорит поиск_', {
             parse_mode: 'Markdown',
             ...Markup.removeKeyboard()
         });
