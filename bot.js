@@ -469,7 +469,7 @@ bot.on('text', async (ctx) => {
     }
     
     if (text === '🆘 Помощь') {
-        await bot.telegram.sendMessage(ctx.chat.id, `🆘 *Помощь и поддержка*\n\n📞 Контакты: @garickbox\n🌐 Сайт: ${CONFIG.MAIN_WEBSITE}`, {
+        await bot.telegram.sendMessage(ctx.chat.id, `🆘 *Помощь и поддержка*\n\n📞 Контакты: @Gor4akov_ya\n🌐 Сайт: ${CONFIG.MAIN_WEBSITE}`, {
             parse_mode: 'Markdown'
         }).then(msg => {
             testManager.addBotMessage(userId, msg.message_id);
