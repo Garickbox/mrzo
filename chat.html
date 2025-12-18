@@ -1711,7 +1711,7 @@
             return `private_${ids[0]}_${ids[1]}`;
         }
 
-        // ====== ЗАГРУЗКА ДИАЛОГОВ ======
+        // ====== ЗАГРУЗКА ДИАЛОГОВ - ИСПРАВЛЕННЫЙ ВАРИАНТ ======
         function loadDialogs() {
             if (!checkAuth()) return;
             
@@ -1721,78 +1721,117 @@
                 dialogsListener();
             }
             
-            dialogsListener = db.collection('privateChats')
-                .where('participants', 'array-contains', currentUser.id)
-                .orderBy('lastMessageTime', 'desc')
-                .onSnapshot((snapshot) => {
-                    elements.dialogsLoading.style.display = 'none';
-                    
-                    if (snapshot.empty) {
+            try {
+                // Пробуем загрузить диалоги из основной коллекции chats
+                dialogsListener = db.collection('chats')
+                    .where('type', '==', 'private')
+                    .where('participants', 'array-contains', currentUser.id)
+                    .onSnapshot((snapshot) => {
+                        elements.dialogsLoading.style.display = 'none';
+                        
+                        if (snapshot.empty) {
+                            elements.dialogsList.innerHTML = `
+                                <div class="empty-chat" style="padding: 20px;">
+                                    У вас пока нет личных сообщений
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        let dialogs = [];
+                        
+                        snapshot.forEach((doc) => {
+                            const dialog = doc.data();
+                            const dialogId = doc.id;
+                            
+                            // Определяем собеседника
+                            const otherParticipant = dialog.participants.find(id => id !== currentUser.id);
+                            let otherParticipantName = 'Пользователь';
+                            
+                            // Получаем имя собеседника из participantNames или других полей
+                            if (dialog.participantNames && dialog.participantNames[otherParticipant]) {
+                                otherParticipantName = dialog.participantNames[otherParticipant];
+                            } else if (dialog.participantsData) {
+                                const otherParticipantData = dialog.participantsData.find(p => p.id === otherParticipant);
+                                if (otherParticipantData) {
+                                    otherParticipantName = otherParticipantData.name || 'Пользователь';
+                                }
+                            }
+                            
+                            const lastMessageTime = dialog.lastMessageTime ? 
+                                formatTimeShort(dialog.lastMessageTime) : '';
+                            
+                            const isActive = currentChatType === 'private' && currentDialogId === dialogId;
+                            
+                            dialogs.push({
+                                id: dialogId,
+                                dialog: dialog,
+                                otherParticipant: otherParticipant,
+                                otherParticipantName: otherParticipantName,
+                                lastMessageTime: dialog.lastMessageTime || 0,
+                                lastMessage: dialog.lastMessage || 'Нет сообщений',
+                                isActive: isActive,
+                                unreadCount: dialog.unreadCount ? (dialog.unreadCount[currentUser.id] || 0) : 0
+                            });
+                        });
+                        
+                        // Сортировка по lastMessageTime (убывание)
+                        dialogs.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+                        
+                        let dialogsHTML = '';
+                        
+                        dialogs.forEach((item) => {
+                            dialogsHTML += `
+                                <div class="dialog-item ${item.isActive ? 'active' : ''}" 
+                                     data-dialog-id="${item.id}"
+                                     data-other-user-id="${item.otherParticipant}"
+                                     data-other-user-name="${item.otherParticipantName}">
+                                    <div class="dialog-avatar">
+                                        ${item.otherParticipantName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div class="dialog-info">
+                                        <div class="dialog-name">${item.otherParticipantName}</div>
+                                        <div class="dialog-last-message">${item.lastMessage}</div>
+                                    </div>
+                                    <div class="dialog-time">${formatTimeShort(item.lastMessageTime)}</div>
+                                    ${item.unreadCount > 0 ? 
+                                        `<div class="dialog-unread"></div>` : ''}
+                                </div>
+                            `;
+                        });
+                        
+                        elements.dialogsList.innerHTML = dialogsHTML;
+                        
+                        // Добавляем обработчики кликов на диалоги
+                        document.querySelectorAll('.dialog-item').forEach(item => {
+                            item.addEventListener('click', function() {
+                                const dialogId = this.dataset.dialogId;
+                                const otherUserId = this.dataset.otherUserId;
+                                const otherUserName = this.dataset.otherUserName;
+                                
+                                switchToPrivateChat(dialogId, otherUserId, otherUserName);
+                            });
+                        });
+                        
+                    }, (error) => {
+                        console.error('Ошибка загрузки диалогов:', error);
+                        elements.dialogsLoading.style.display = 'none';
                         elements.dialogsList.innerHTML = `
                             <div class="empty-chat" style="padding: 20px;">
                                 У вас пока нет личных сообщений
                             </div>
                         `;
-                        return;
-                    }
-                    
-                    let dialogsHTML = '';
-                    
-                    snapshot.forEach((doc) => {
-                        const dialog = doc.data();
-                        const dialogId = doc.id;
-                        
-                        // Определяем собеседника
-                        const otherParticipant = dialog.participants.find(id => id !== currentUser.id);
-                        const otherParticipantName = dialog.participantNames ? 
-                            dialog.participantNames[otherParticipant] || 'Пользователь' : 
-                            'Пользователь';
-                        
-                        const lastMessageTime = dialog.lastMessageTime ? 
-                            formatTimeShort(dialog.lastMessageTime) : '';
-                        
-                        const isActive = currentChatType === 'private' && currentDialogId === dialogId;
-                        
-                        dialogsHTML += `
-                            <div class="dialog-item ${isActive ? 'active' : ''}" 
-                                 data-dialog-id="${dialogId}"
-                                 data-other-user-id="${otherParticipant}"
-                                 data-other-user-name="${otherParticipantName}">
-                                <div class="dialog-avatar">
-                                    ${otherParticipantName.charAt(0).toUpperCase()}
-                                </div>
-                                <div class="dialog-info">
-                                    <div class="dialog-name">${otherParticipantName}</div>
-                                    <div class="dialog-last-message">${dialog.lastMessage || 'Нет сообщений'}</div>
-                                </div>
-                                <div class="dialog-time">${lastMessageTime}</div>
-                                ${dialog.unreadCount && dialog.unreadCount[currentUser.id] > 0 ? 
-                                    `<div class="dialog-unread"></div>` : ''}
-                            </div>
-                        `;
                     });
                     
-                    elements.dialogsList.innerHTML = dialogsHTML;
-                    
-                    // Добавляем обработчики кликов на диалоги
-                    document.querySelectorAll('.dialog-item').forEach(item => {
-                        item.addEventListener('click', function() {
-                            const dialogId = this.dataset.dialogId;
-                            const otherUserId = this.dataset.otherUserId;
-                            const otherUserName = this.dataset.otherUserName;
-                            
-                            switchToPrivateChat(dialogId, otherUserId, otherUserName);
-                        });
-                    });
-                    
-                }, (error) => {
-                    console.error('Ошибка загрузки диалогов:', error);
-                    elements.dialogsList.innerHTML = `
-                        <div class="empty-chat" style="padding: 20px;">
-                            Ошибка загрузки диалогов
-                        </div>
-                    `;
-                });
+            } catch (error) {
+                console.error('Ошибка инициализации загрузки диалогов:', error);
+                elements.dialogsLoading.style.display = 'none';
+                elements.dialogsList.innerHTML = `
+                    <div class="empty-chat" style="padding: 20px;">
+                        Невозможно загрузить диалоги
+                    </div>
+                `;
+            }
         }
 
         // ====== ПЕРЕКЛЮЧЕНИЕ ЧАТОВ ======
@@ -1890,13 +1929,13 @@
         }
 
         function loadPrivateMessages(dialogId) {
-            if (!checkAuth()) return;
+            if (!checkAuth() || !dialogId) return;
             
             elements.loadingIndicator.style.display = 'block';
             elements.messagesWindow.innerHTML = '';
             elements.messagesWindow.appendChild(elements.loadingIndicator);
             
-            messagesListener = db.collection('privateChats')
+            messagesListener = db.collection('chats')
                 .doc(dialogId)
                 .collection('messages')
                 .orderBy('timestamp', 'asc')
@@ -1943,19 +1982,19 @@
                 }
                 
                 let displayName = message.name || 'Аноним';
+                let isMyMessage = false;
+                
                 if (chatType === 'private') {
                     // В личных сообщениях показываем просто имя отправителя
                     displayName = message.senderId === currentUser.id ? 'Вы' : message.senderName || 'Пользователь';
+                    isMyMessage = message.senderId === currentUser.id;
                 } else {
                     // В групповых чатах показываем администратора с короной
                     const isAdminMessage = message.name === 'Admin' || message.name === '👑 Администратор';
                     displayName = isAdminMessage ? '👑 Администратор' : message.name || 'Аноним';
+                    isMyMessage = message.userId === currentUser.id || 
+                                 (message.name === currentUser.name && message.class == currentUser.class);
                 }
-                
-                const isMyMessage = message.userId === currentUser.id || 
-                                  message.senderId === currentUser.id ||
-                                  (message.name === currentUser.name && 
-                                   message.class == currentUser.class);
                 
                 const timeString = formatMessageDate(message.timestamp);
                 
@@ -2020,8 +2059,8 @@
                             ${message.edited ? '<span class="message-edited">(ред.)</span>' : ''}
                             ${chatType === 'private' ? `
                                 <span class="message-status">
-                                    ${message.status === 'delivered' ? '✓✓' : 
-                                      message.status === 'read' ? '✓✓' : 
+                                    ${message.status === 'read' ? '✓✓' : 
+                                      message.status === 'delivered' ? '✓✓' : 
                                       message.status === 'sent' ? '✓' : ''}
                                 </span>
                             ` : ''}
@@ -2126,7 +2165,7 @@
             }
             
             const messageId = Date.now().toString();
-            const dialogRef = db.collection('privateChats').doc(currentDialogId);
+            const dialogRef = db.collection('chats').doc(currentDialogId);
             const dialogDoc = await dialogRef.get();
             
             if (!dialogDoc.exists) {
@@ -2155,15 +2194,6 @@
                 lastMessageTime: Date.now(),
                 [`unreadCount.${otherUserId}`]: firebase.firestore.FieldValue.increment(1)
             });
-            
-            // Обновляем статус сообщения на доставленное
-            setTimeout(async () => {
-                await dialogRef.collection('messages')
-                    .doc(messageId)
-                    .update({
-                        status: 'delivered'
-                    });
-            }, 1000);
         }
 
         // ====== СОЗДАНИЕ НОВОГО ЛИЧНОГО ЧАТА ======
@@ -2184,33 +2214,47 @@
             try {
                 let users = [];
                 
-                if (isAdmin) {
-                    // Для админа загружаем всех пользователей
-                    // Здесь нужно реализовать загрузку из коллекции users
-                    // Пока используем localStorage как пример
-                    const savedStudents = localStorage.getItem('students');
-                    if (savedStudents) {
-                        const allStudents = JSON.parse(savedStudents);
+                // Загружаем пользователей из localStorage
+                const savedStudents = localStorage.getItem('students');
+                if (savedStudents) {
+                    const allStudents = JSON.parse(savedStudents);
+                    
+                    // Фильтруем по правам доступа
+                    if (isAdmin) {
+                        // Для админа показываем всех кроме себя
                         users = allStudents.filter(student => student.id !== currentUser.id);
-                    }
-                } else {
-                    // Для студента показываем одноклассников
-                    const savedStudents = localStorage.getItem('students');
-                    if (savedStudents) {
-                        const allStudents = JSON.parse(savedStudents);
+                    } else {
+                        // Для студента показываем одноклассников
                         users = allStudents.filter(student => 
                             student.id !== currentUser.id && 
                             student.class == currentUser.class
                         );
+                        
+                        // Добавляем администратора
+                        users.push({
+                            id: 'admin',
+                            name: '👑 Администратор',
+                            class: null,
+                            isAdmin: true
+                        });
                     }
+                } else {
+                    // Если нет пользователей в localStorage, создаем демо-список
+                    users = [
+                        { id: 'admin', name: '👑 Администратор', class: null, isAdmin: true }
+                    ];
                     
-                    // Добавляем администратора
-                    users.push({
-                        id: 'admin',
-                        name: '👑 Администратор',
-                        class: null,
-                        isAdmin: true
-                    });
+                    if (currentUser.class) {
+                        // Добавляем одноклассников
+                        for (let i = 1; i <= 3; i++) {
+                            users.push({
+                                id: `classmate${i}`,
+                                name: `Одноклассник ${i}`,
+                                class: currentUser.class,
+                                isAdmin: false
+                            });
+                        }
+                    }
                 }
                 
                 displayUsersList(users);
@@ -2284,12 +2328,13 @@
             
             try {
                 const dialogId = generateDialogId(currentUser.id, selectedUserForChat.id);
-                const dialogRef = db.collection('privateChats').doc(dialogId);
+                const dialogRef = db.collection('chats').doc(dialogId);
                 const dialogDoc = await dialogRef.get();
                 
                 if (!dialogDoc.exists) {
                     // Создаем новый диалог
                     await dialogRef.set({
+                        type: 'private',
                         participants: [currentUser.id, selectedUserForChat.id],
                         participantNames: {
                             [currentUser.id]: currentUser.name,
@@ -2300,7 +2345,8 @@
                         unreadCount: {
                             [currentUser.id]: 0,
                             [selectedUserForChat.id]: 0
-                        }
+                        },
+                        createdAt: Date.now()
                     });
                 }
                 
@@ -2309,6 +2355,9 @@
                 
                 // Переключаемся на новый диалог
                 switchToPrivateChat(dialogId, selectedUserForChat.id, selectedUserForChat.name);
+                
+                // Перезагружаем список диалогов
+                loadDialogs();
                 
                 showStatus('Диалог создан', 'success');
                 
@@ -2327,7 +2376,7 @@
         // ====== СБРОС СЧЕТЧИКА НЕПРОЧИТАННЫХ ======
         async function resetUnreadCount(dialogId) {
             try {
-                await db.collection('privateChats')
+                await db.collection('chats')
                     .doc(dialogId)
                     .update({
                         [`unreadCount.${currentUser.id}`]: 0
@@ -2532,7 +2581,7 @@
                         .doc(messageId)
                         .delete();
                 } else if (currentChatType === 'private') {
-                    await db.collection('privateChats')
+                    await db.collection('chats')
                         .doc(currentDialogId)
                         .collection('messages')
                         .doc(messageId)
@@ -2586,7 +2635,7 @@
                             editTimestamp: Date.now()
                         });
                 } else if (currentChatType === 'private') {
-                    await db.collection('privateChats')
+                    await db.collection('chats')
                         .doc(currentDialogId)
                         .collection('messages')
                         .doc(messageId)
@@ -2866,7 +2915,7 @@
                         .where('timestamp', '>', lastMessageTime)
                         .get();
                 } else if (currentChatType === 'private' && currentDialogId) {
-                    newMessages = await db.collection('privateChats')
+                    newMessages = await db.collection('chats')
                         .doc(currentDialogId)
                         .collection('messages')
                         .where('timestamp', '>', lastMessageTime)
