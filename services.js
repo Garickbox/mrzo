@@ -140,7 +140,7 @@ class TestLoader {
 class TestManager {
     constructor() {
         this.userSessions = new Map();
-        this.userMessages = new Map(); // Для хранения сообщений пользователей
+        this.userLastMessages = new Map(); // Храним последнее сообщение пользователя
     }
 
     createTestSession(userId, testData, student) {
@@ -167,11 +167,10 @@ class TestManager {
                 botToken: CONFIG.BOT_TOKEN,
                 chatId: CONFIG.RESULTS_CHAT_ID
             },
-            botMessages: [] // Сохраняем ID сообщений бота для последующего удаления
+            lastBotMessageId: null // ID последнего сообщения бота для удаления
         };
         
         this.userSessions.set(userId, session);
-        this.userMessages.set(userId, []); // Инициализируем массив для сообщений пользователя
         console.log(`✅ Создана сессия теста для ${student.lastName} ${student.firstName} (${student.class} класс)`);
         return session;
     }
@@ -181,55 +180,52 @@ class TestManager {
     }
 
     deleteSession(userId) {
-        this.userMessages.delete(userId);
+        this.userLastMessages.delete(userId);
         return this.userSessions.delete(userId);
     }
 
-    addBotMessage(userId, messageId) {
+    // Обновляем последнее сообщение пользователя
+    updateUserLastMessage(userId, messageId) {
+        this.userLastMessages.set(userId, messageId);
+    }
+
+    // Удаляем последнее сообщение пользователя
+    async deleteUserLastMessage(userId, ctx) {
+        const lastMessageId = this.userLastMessages.get(userId);
+        if (lastMessageId) {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, lastMessageId);
+                this.userLastMessages.delete(userId);
+                return true;
+            } catch (error) {
+                // Сообщение уже удалено или недоступно
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Удаляем предыдущее сообщение бота перед отправкой нового
+    async cleanupPreviousBotMessage(userId, ctx) {
+        const session = this.userSessions.get(userId);
+        if (session && session.lastBotMessageId) {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, session.lastBotMessageId);
+                session.lastBotMessageId = null;
+                return true;
+            } catch (error) {
+                // Сообщение уже удалено или недоступно
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Обновляем последнее сообщение бота
+    updateBotLastMessage(userId, messageId) {
         const session = this.userSessions.get(userId);
         if (session) {
-            session.botMessages.push(messageId);
-        }
-    }
-
-    addUserMessage(userId, messageId) {
-        if (!this.userMessages.has(userId)) {
-            this.userMessages.set(userId, []);
-        }
-        this.userMessages.get(userId).push(messageId);
-    }
-
-    async cleanupMessages(userId, ctx, keepLastMessageId = null) {
-        try {
-            // Удаляем сообщения бота
-            const session = this.userSessions.get(userId);
-            if (session && session.botMessages) {
-                for (const messageId of session.botMessages) {
-                    if (messageId !== keepLastMessageId) {
-                        try {
-                            await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
-                        } catch (error) {
-                            // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
-                        }
-                    }
-                }
-                session.botMessages = keepLastMessageId ? [keepLastMessageId] : [];
-            }
-
-            // Удаляем сообщения пользователя (вопросы, команды)
-            const userMessages = this.userMessages.get(userId);
-            if (userMessages) {
-                for (const messageId of userMessages) {
-                    try {
-                        await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
-                    } catch (error) {
-                        // Игнорируем ошибки
-                    }
-                }
-                this.userMessages.set(userId, []);
-            }
-        } catch (error) {
-            console.error('❌ Ошибка очистки сообщений:', error.message);
+            session.lastBotMessageId = messageId;
         }
     }
 
