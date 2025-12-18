@@ -140,6 +140,7 @@ class TestLoader {
 class TestManager {
     constructor() {
         this.userSessions = new Map();
+        this.userMessages = new Map(); // Для хранения сообщений пользователей
     }
 
     createTestSession(userId, testData, student) {
@@ -165,10 +166,12 @@ class TestManager {
             telegramConfig: testData.TEST_CONFIG.telegram || {
                 botToken: CONFIG.BOT_TOKEN,
                 chatId: CONFIG.RESULTS_CHAT_ID
-            }
+            },
+            botMessages: [] // Сохраняем ID сообщений бота для последующего удаления
         };
         
         this.userSessions.set(userId, session);
+        this.userMessages.set(userId, []); // Инициализируем массив для сообщений пользователя
         console.log(`✅ Создана сессия теста для ${student.lastName} ${student.firstName} (${student.class} класс)`);
         return session;
     }
@@ -178,7 +181,56 @@ class TestManager {
     }
 
     deleteSession(userId) {
+        this.userMessages.delete(userId);
         return this.userSessions.delete(userId);
+    }
+
+    addBotMessage(userId, messageId) {
+        const session = this.userSessions.get(userId);
+        if (session) {
+            session.botMessages.push(messageId);
+        }
+    }
+
+    addUserMessage(userId, messageId) {
+        if (!this.userMessages.has(userId)) {
+            this.userMessages.set(userId, []);
+        }
+        this.userMessages.get(userId).push(messageId);
+    }
+
+    async cleanupMessages(userId, ctx, keepLastMessageId = null) {
+        try {
+            // Удаляем сообщения бота
+            const session = this.userSessions.get(userId);
+            if (session && session.botMessages) {
+                for (const messageId of session.botMessages) {
+                    if (messageId !== keepLastMessageId) {
+                        try {
+                            await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
+                        } catch (error) {
+                            // Игнорируем ошибки удаления (сообщение могло быть уже удалено)
+                        }
+                    }
+                }
+                session.botMessages = keepLastMessageId ? [keepLastMessageId] : [];
+            }
+
+            // Удаляем сообщения пользователя (вопросы, команды)
+            const userMessages = this.userMessages.get(userId);
+            if (userMessages) {
+                for (const messageId of userMessages) {
+                    try {
+                        await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
+                    } catch (error) {
+                        // Игнорируем ошибки
+                    }
+                }
+                this.userMessages.set(userId, []);
+            }
+        } catch (error) {
+            console.error('❌ Ошибка очистки сообщений:', error.message);
+        }
     }
 
     answerQuestion(userId, answerIndex) {
