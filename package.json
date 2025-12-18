@@ -6,9 +6,8 @@
   "scripts": {
     "start": "node bot.js",
     "dev": "nodemon bot.js",
-    "setup": "npm install && cp .env.example .env && echo '⚠️ Обновите переменные в .env файле!'",
-    "lint": "eslint .",
-    "test": "echo \"No tests yet\" && exit 0"
+    "setup": "npm install && echo '✅ Зависимости установлены!'",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "telegram",
@@ -17,7 +16,7 @@
     "testing",
     "education"
   ],
-  "author": "Your Name",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "telegraf": "^4.12.2",
@@ -26,11 +25,9 @@
     "dotenv": "^16.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "eslint": "^8.0.0"
+    "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=16.0.0"
   }
 }
