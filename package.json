@@ -1,0 +1,36 @@
+{
+  "name": "school-test-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for school testing system",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js",
+    "setup": "npm install && cp .env.example .env && echo '⚠️ Обновите переменные в .env файле!'",
+    "lint": "eslint .",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "school",
+    "testing",
+    "education"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "telegraf": "^4.12.2",
+    "node-fetch": "^2.6.9",
+    "firebase-admin": "^11.8.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
