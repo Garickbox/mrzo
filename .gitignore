@@ -30,3 +30,13 @@ firebase-key.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+
+# Config files
+config.json
