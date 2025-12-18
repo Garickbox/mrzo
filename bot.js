@@ -29,10 +29,18 @@ function escapeMarkdown(text) {
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 }
 
-// Функция для отправки сообщения и добавления в цепочку
-async function sendMessage(ctx, userId, text, options = {}, addToChain = true) {
+// Функция для отправки сообщения с автоматическим удалением предыдущего активного
+async function sendMessageWithCleanup(ctx, userId, text, options = {}, addToChain = true) {
+    // Удаляем предыдущее активное сообщение
+    await testManager.deleteActiveMessage(userId, ctx);
+    
+    // Отправляем новое сообщение
     const message = await ctx.reply(text, options);
     
+    // Сохраняем как активное
+    testManager.setActiveMessage(userId, message.message_id);
+    
+    // Добавляем в цепочку если нужно
     if (addToChain) {
         testManager.addToMessageChain(userId, message.message_id);
     }
@@ -40,11 +48,27 @@ async function sendMessage(ctx, userId, text, options = {}, addToChain = true) {
     return message;
 }
 
-// Функция для удаления сообщения пользователя
+// Функция для отправки временного сообщения (удаляется через 3 секунды)
+async function sendTempMessage(ctx, userId, text, options = {}) {
+    const message = await ctx.reply(text, options);
+    
+    // Удаляем через 3 секунды
+    setTimeout(async () => {
+        try {
+            await ctx.telegram.deleteMessage(ctx.chat.id, message.message_id);
+        } catch (error) {
+            // Игнорируем ошибки удаления
+        }
+    }, 3000);
+    
+    return message;
+}
+
+// Удаляем сообщение пользователя
 async function deleteUserMessage(ctx, userId) {
     try {
         await ctx.deleteMessage();
-        // Также добавляем в цепочку для последующей очистки
+        // Добавляем в цепочку для последующей очистки
         testManager.addToMessageChain(userId, ctx.message.message_id);
     } catch (error) {
         // Игнорируем ошибки удаления
@@ -77,7 +101,7 @@ bot.command('help', async (ctx) => {
     // Удаляем сообщение пользователя
     await deleteUserMessage(ctx, userId);
     
-    await sendMessage(ctx, userId, `🆘 *Помощь и поддержка*
+    await sendMessageWithCleanup(ctx, userId, `🆘 *Помощь и поддержка*
 
 📞 *Контакты разработчика:* @garickbox
 🌐 *Официальный сайт:* ${CONFIG.MAIN_WEBSITE}
@@ -85,16 +109,18 @@ bot.command('help', async (ctx) => {
 *Основные команды:*
 /start - Главное меню
 /help - Эта справка
+/cancel - Отменить текущий тест
 
 *Процесс тестирования:*
 1. Выберите "Начать тест"
 2. Пришлите код теста (например: ttii7)
-3. Пройдите вопросы теста
+3. Пройдите вопросы теста (используйте кнопки под сообщением)
 4. Получите результат
 
 *Если возникли проблемы:*
 - Проверьте правильность ввода кода теста
 - Убедитесь в стабильности интернет-соединения
+- Используйте кнопки для ответов, не пишите текст
 - При необходимости свяжитесь с разработчиком`, {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard()
@@ -112,10 +138,14 @@ bot.command('cancel', async (ctx) => {
     if (session) {
         // Очищаем цепочку сообщений теста
         await testManager.cleanupMessageChain(userId, ctx);
+        // Удаляем текущий вопрос если есть
+        await testManager.deleteCurrentQuestionMessage(userId, ctx);
+        // Удаляем активное сообщение
+        await testManager.deleteActiveMessage(userId, ctx);
         // Удаляем сессию
         testManager.deleteSession(userId);
         
-        await sendMessage(ctx, userId, '✅ *Тест отменен.*\n\nВсе сообщения теста удалены.', {
+        await sendTempMessage(ctx, userId, '✅ *Тест отменен.*\n\nВсе сообщения теста удалены.', {
             parse_mode: 'Markdown'
         });
         
@@ -127,7 +157,7 @@ bot.command('cancel', async (ctx) => {
             await requestStudentAuth(ctx, userId);
         }
     } else {
-        await sendMessage(ctx, userId, '❌ *Нет активного теста для отмены.*', {
+        await sendTempMessage(ctx, userId, '❌ *Нет активного теста для отмены.*', {
             parse_mode: 'Markdown'
         });
     }
@@ -142,12 +172,24 @@ bot.on('text', async (ctx) => {
     const savedStudent = testManager.getStudent(userId);
     const session = testManager.getSession(userId);
     
+    // Если есть активный тест
+    if (session) {
+        // Удаляем сообщение пользователя
+        await deleteUserMessage(ctx, userId);
+        
+        // Отправляем временное напоминание об использовании кнопок
+        await sendTempMessage(ctx, userId, '⚠️ *Используйте кнопки для ответа!*\n\nДля отмены теста используйте /cancel', {
+            parse_mode: 'Markdown'
+        });
+        return;
+    }
+    
     // Обработка кнопок меню
     if (text === '🚀 Начать тест') {
         await deleteUserMessage(ctx, userId);
         
         if (!savedStudent) {
-            await sendMessage(ctx, userId, '❌ *Сначала нужно авторизоваться!*\n\nНажмите /start для начала.', {
+            await sendMessageWithCleanup(ctx, userId, '❌ *Сначала нужно авторизоваться!*\n\nНажмите /start для начала.', {
                 parse_mode: 'Markdown'
             });
             return;
@@ -159,7 +201,7 @@ bot.on('text', async (ctx) => {
     
     if (text === '🆘 Помощь') {
         await deleteUserMessage(ctx, userId);
-        await sendMessage(ctx, userId, `📞 *Контакты поддержки:* @garickbox\n🌐 *Сайт:* ${CONFIG.MAIN_WEBSITE}`, {
+        await sendMessageWithCleanup(ctx, userId, `📞 *Контакты поддержки:* @garickbox\n🌐 *Сайт:* ${CONFIG.MAIN_WEBSITE}\n\nДля отмены теста: /cancel`, {
             parse_mode: 'Markdown'
         });
         return;
@@ -172,6 +214,8 @@ bot.on('text', async (ctx) => {
         testManager.removeStudent(userId);
         // Очищаем цепочку
         await testManager.cleanupMessageChain(userId, ctx);
+        // Удаляем активное сообщение
+        await testManager.deleteActiveMessage(userId, ctx);
         
         // Начинаем новую цепочку авторизации
         testManager.startMessageChain(userId, ctx.message.message_id);
@@ -182,15 +226,6 @@ bot.on('text', async (ctx) => {
     // Обработка ввода кода теста
     if (text.startsWith('ttii') || text === 'test') {
         await processTestCode(ctx, userId, text, savedStudent);
-        return;
-    }
-    
-    // Если есть активная сессия теста, игнорируем другие текстовые сообщения
-    if (session) {
-        await deleteUserMessage(ctx, userId);
-        await sendMessage(ctx, userId, '📝 *Сейчас активен тест!*\n\nИспользуйте кнопки для ответа на вопросы.', {
-            parse_mode: 'Markdown'
-        });
         return;
     }
     
@@ -219,35 +254,47 @@ bot.action(/answer:(\d+)/, async (ctx) => {
     
     const { session, isCorrect, isCompleted } = result;
     
-    try {
-        await ctx.editMessageText(
-            `✅ *Ответ принят!*\n\n${isCorrect ? '✅ Правильно!' : '❌ Неправильно'}\n${isCompleted ? '\n⏳ *Подсчитываем результаты...*' : ''}`,
-            { parse_mode: 'Markdown' }
-        );
-    } catch (error) {
-        // Игнорируем ошибки редактирования
-    }
+    // Удаляем текущий вопрос
+    await testManager.deleteCurrentQuestionMessage(userId, ctx);
+    
+    // Показываем результат ответа
+    const resultMessage = await ctx.reply(
+        `✅ *Ответ принят!*\n\n${isCorrect ? '✅ Правильно!' : '❌ Неправильно'}\n${isCompleted ? '\n⏳ *Подсчитываем результаты...*' : ''}`,
+        { parse_mode: 'Markdown' }
+    );
+    
+    // Добавляем результат в цепочку
+    testManager.addToMessageChain(userId, resultMessage.message_id);
     
     if (isCompleted) {
-        // Очищаем все сообщения теста перед показом результатов
-        await testManager.cleanupMessageChain(userId, ctx);
-        setTimeout(() => finishTest(ctx, session), 1500);
-    } else {
-        // Удаляем сообщение с результатом ответа и показываем следующий вопрос
+        // Удаляем результат через 2 секунды и завершаем тест
         setTimeout(async () => {
             try {
-                await ctx.deleteMessage();
+                await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
             } catch (error) {
-                // Игнорируем ошибку удаления
+                // Игнорируем
+            }
+            setTimeout(() => finishTest(ctx, session), 500);
+        }, 2000);
+    } else {
+        // Удаляем результат через 2 секунды и показываем следующий вопрос
+        setTimeout(async () => {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
+            } catch (error) {
+                // Игнорируем
             }
             setTimeout(() => showQuestion(ctx, session), 500);
-        }, 1500);
+        }, 2000);
     }
+    
+    // Подтверждаем нажатие кнопки
+    await ctx.answerCbQuery();
 });
 
 // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 async function showMainMenu(ctx, userId, student) {
-    await sendMessage(ctx, userId, `👋 *Привет, ${escapeMarkdown(student.firstName)} ${escapeMarkdown(student.lastName)}!*
+    await sendMessageWithCleanup(ctx, userId, `👋 *Привет, ${escapeMarkdown(student.firstName)} ${escapeMarkdown(student.lastName)}!*
 
 🏫 *Класс:* ${student.class}
 🆔 *ID:* ${student.id}
@@ -262,7 +309,7 @@ async function showMainMenu(ctx, userId, student) {
 }
 
 async function requestStudentAuth(ctx, userId) {
-    await sendMessage(ctx, userId, '👤 *Авторизация ученика*\n\nВведите ваши данные в формате:\n`Фамилия Имя Класс`\n\n*Пример:*\n`Иванов Иван 7`\n\n_Класс указывать обязательно (7-11)_', {
+    await sendMessageWithCleanup(ctx, userId, '👤 *Авторизация ученика*\n\nВведите ваши данные в формате:\n`Фамилия Имя Класс`\n\n*Пример:*\n`Иванов Иван 7`\n\n_Класс указывать обязательно (7-11)_', {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard()
     });
@@ -278,7 +325,7 @@ async function processStudentAuth(ctx, userId, text) {
         
         // Валидация класса
         if (!['7','8','9','10','11'].includes(className)) {
-            await sendMessage(ctx, userId, '❌ *Класс должен быть числом от 7 до 11*\n\nПопробуйте еще раз:', {
+            await sendMessageWithCleanup(ctx, userId, '❌ *Класс должен быть числом от 7 до 11*\n\nПопробуйте еще раз:', {
                 parse_mode: 'Markdown'
             });
             return;
@@ -300,19 +347,19 @@ async function processStudentAuth(ctx, userId, text) {
             // Показываем главное меню
             await showMainMenu(ctx, userId, student);
         } else {
-            await sendMessage(ctx, userId, '❌ *Ученик не найден*\n\nПроверьте:\n1. Правильность Фамилии и Имени\n2. Правильность класса (7-11)\n3. Попробуйте еще раз\n\nПример: `Иванов Иван 7`', {
+            await sendMessageWithCleanup(ctx, userId, '❌ *Ученик не найден*\n\nПроверьте:\n1. Правильность Фамилии и Имени\n2. Правильность класса (7-11)\n3. Попробуйте еще раз\n\nПример: `Иванов Иван 7`', {
                 parse_mode: 'Markdown'
             });
         }
     } else {
-        await sendMessage(ctx, userId, '❌ *Неверный формат*\n\nВведите: `Фамилия Имя Класс`\n\nПример: `Иванов Иван 7`', {
+        await sendMessageWithCleanup(ctx, userId, '❌ *Неверный формат*\n\nВведите: `Фамилия Имя Класс`\n\nПример: `Иванов Иван 7`', {
             parse_mode: 'Markdown'
         });
     }
 }
 
 async function requestTestCode(ctx, userId) {
-    await sendMessage(ctx, userId, '📝 *Введите код теста*\n\n*Доступные тесты:*\n• `ttii7` - Компьютер — универсальное устройство (7 класс)\n• `test` - Основной тест\n\nПросто отправьте код теста:', {
+    await sendMessageWithCleanup(ctx, userId, '📝 *Введите код теста*\n\n*Доступные тесты:*\n• `ttii7` - Компьютер — универсальное устройство (7 класс)\n• `test` - Основной тест\n\nПросто отправьте код теста:', {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard()
     });
@@ -328,7 +375,7 @@ async function processTestCode(ctx, userId, testCode, student) {
         const testExists = tests.some(test => test.name === testCode);
         
         if (!testExists) {
-            await sendMessage(ctx, userId, `❌ *Тест "${testCode}" не найден*\n\n*Доступные тесты:*\n• ttii7\n• test`, {
+            await sendMessageWithCleanup(ctx, userId, `❌ *Тест "${testCode}" не найден*\n\n*Доступные тесты:*\n• ttii7\n• test\n\nИспользуйте кнопку "Начать тест" для выбора теста.`, {
                 parse_mode: 'Markdown'
             });
             return;
@@ -348,7 +395,7 @@ async function processTestCode(ctx, userId, testCode, student) {
         
     } catch (error) {
         console.error('Ошибка начала теста:', error);
-        await sendMessage(ctx, userId, `❌ *Ошибка:* ${error.message}\n\nПопробуйте другой тест или обратитесь в поддержку.`, {
+        await sendMessageWithCleanup(ctx, userId, `❌ *Ошибка:* ${error.message}\n\nПопробуйте другой тест или обратитесь в поддержку.`, {
             parse_mode: 'Markdown'
         });
     }
@@ -374,13 +421,18 @@ ${question.text}
 
 *Выберите правильный ответ:*`;
         
-        await sendMessage(ctx, session.userId, message, {
+        const questionMessage = await ctx.reply(message, {
             parse_mode: 'Markdown',
             ...Markup.inlineKeyboard(buttons)
         });
+        
+        // Сохраняем ID сообщения с вопросом
+        testManager.setCurrentQuestionMessageId(session.userId, questionMessage.message_id);
+        testManager.addToMessageChain(session.userId, questionMessage.message_id);
+        
     } catch (error) {
         console.error('Ошибка показа вопроса:', error);
-        await sendMessage(ctx, session.userId, '❌ Произошла ошибка при загрузке вопроса. Пожалуйста, начните тест заново.');
+        await sendMessageWithCleanup(ctx, session.userId, '❌ Произошла ошибка при загрузке вопроса. Пожалуйста, начните тест заново.');
         testManager.deleteSession(ctx.from.id);
     }
 }
@@ -431,26 +483,33 @@ ${rating}
 
 Результат сохранен в системе.`;
         
-        // Отправляем результат (НЕ добавляем в цепочку для удаления)
-        await ctx.reply(message, {
-            parse_mode: 'Markdown',
-            ...Markup.removeKeyboard()
-        });
+        // Очищаем ВСЕ сообщения теста (включая активное сообщение)
+        await testManager.cleanupMessageChain(ctx.from.id, ctx);
+        await testManager.deleteActiveMessage(ctx.from.id, ctx);
         
         // Очищаем сессию
         testManager.deleteSession(ctx.from.id);
         
-        // Показываем главное меню через 2 секунды
+        // Отправляем результат (НЕ добавляем в цепочку для удаления)
+        const finalMessage = await ctx.reply(message, {
+            parse_mode: 'Markdown',
+            ...Markup.removeKeyboard()
+        });
+        
+        // Сохраняем финальное сообщение как активное
+        testManager.setActiveMessage(ctx.from.id, finalMessage.message_id);
+        
+        // Показываем главное меню через 5 секунды
         setTimeout(async () => {
             const savedStudent = testManager.getStudent(ctx.from.id);
             if (savedStudent) {
                 await showMainMenu(ctx, ctx.from.id, savedStudent);
             }
-        }, 2000);
+        }, 5000);
         
     } catch (error) {
         console.error('Ошибка завершения теста:', error);
-        await sendMessage(ctx, session.userId, '❌ Произошла ошибка при сохранении результатов. Пожалуйста, свяжитесь с администратором.');
+        await sendMessageWithCleanup(ctx, session.userId, '❌ Произошла ошибка при сохранении результатов. Пожалуйста, свяжитесь с администратором.');
     }
 }
 
@@ -458,7 +517,6 @@ ${rating}
 bot.catch((err, ctx) => {
     console.error(`Ошибка для пользователя ${ctx.from?.id}:`, err);
     
-    // Пытаемся отправить сообщение об ошибке
     try {
         ctx.reply('❌ Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже или обратитесь к администратору @garickbox');
     } catch (e) {
@@ -484,7 +542,6 @@ async function startBot() {
         console.log('🤖 Бот успешно запущен!');
         console.log('👤 Бот доступен как:', bot.botInfo.username);
         console.log('🔗 Ссылка на бота:', `https://t.me/${bot.botInfo.username}`);
-        console.log('📊 Панель администратора: https://core.telegram.org/bots#botfather');
         
     } catch (error) {
         console.error('❌ Критическая ошибка запуска бота:', error.message);

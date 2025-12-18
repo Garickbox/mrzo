@@ -140,8 +140,9 @@ class TestLoader {
 class TestManager {
     constructor() {
         this.userSessions = new Map();
-        this.userStudents = new Map(); // Храним авторизованных пользователей (userId -> student)
-        this.userMessageChains = new Map(); // Храним цепочки сообщений для удаления
+        this.userStudents = new Map();
+        this.userMessageChains = new Map();
+        this.userActiveMessage = new Map(); // Активное сообщение для каждого пользователя
     }
 
     // Авторизация пользователей
@@ -159,6 +160,30 @@ class TestManager {
         this.userStudents.delete(userId);
         console.log(`🗑️ Удален ученик для userId ${userId}`);
         return true;
+    }
+
+    // Управление активными сообщениями
+    setActiveMessage(userId, messageId) {
+        this.userActiveMessage.set(userId, messageId);
+        return true;
+    }
+
+    getActiveMessage(userId) {
+        return this.userActiveMessage.get(userId);
+    }
+
+    async deleteActiveMessage(userId, ctx) {
+        const activeMessageId = this.userActiveMessage.get(userId);
+        if (activeMessageId) {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, activeMessageId);
+                this.userActiveMessage.delete(userId);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
     }
 
     // Управление цепочками сообщений
@@ -184,7 +209,7 @@ class TestManager {
             try {
                 await ctx.telegram.deleteMessage(ctx.chat.id, messageId);
             } catch (error) {
-                // Игнорируем ошибки (сообщение могло быть уже удалено)
+                // Игнорируем ошибки
             }
         }
         
@@ -216,7 +241,8 @@ class TestManager {
             telegramConfig: testData.TEST_CONFIG.telegram || {
                 botToken: CONFIG.BOT_TOKEN,
                 chatId: CONFIG.RESULTS_CHAT_ID
-            }
+            },
+            currentQuestionMessageId: null // ID текущего сообщения с вопросом
         };
         
         this.userSessions.set(userId, session);
@@ -230,7 +256,31 @@ class TestManager {
 
     deleteSession(userId) {
         this.userMessageChains.delete(userId);
+        this.userActiveMessage.delete(userId);
         return this.userSessions.delete(userId);
+    }
+
+    setCurrentQuestionMessageId(userId, messageId) {
+        const session = this.userSessions.get(userId);
+        if (session) {
+            session.currentQuestionMessageId = messageId;
+            return true;
+        }
+        return false;
+    }
+
+    async deleteCurrentQuestionMessage(userId, ctx) {
+        const session = this.userSessions.get(userId);
+        if (session && session.currentQuestionMessageId) {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, session.currentQuestionMessageId);
+                session.currentQuestionMessageId = null;
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return false;
     }
 
     answerQuestion(userId, answerIndex) {
