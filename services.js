@@ -129,10 +129,7 @@ class TestLoader {
     }
 
     getAvailableTests() {
-        return [
-            { name: 'ttii7', title: 'Компьютер — универсальное устройство (7 класс)' },
-            { name: 'test', title: 'Основной тест' }
-        ];
+        return [];
     }
 }
 

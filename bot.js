@@ -113,9 +113,13 @@ bot.command('help', async (ctx) => {
 
 *Процесс тестирования:*
 1. Выберите "Начать тест"
-2. Пришлите код теста (например: ttii7)
+2. Пришлите код теста (код присылается преподавателем)
 3. Пройдите вопросы теста (используйте кнопки под сообщением)
 4. Получите результат
+
+*Коды тестов:*
+- Код теста присылается преподавателем
+- Вводите код точно как указано
 
 *Если возникли проблемы:*
 - Проверьте правильность ввода кода теста
@@ -223,8 +227,8 @@ bot.on('text', async (ctx) => {
         return;
     }
     
-    // Обработка ввода кода теста
-    if (text.startsWith('ttii') || text === 'test') {
+    // Обработка ввода кода теста (если пользователь авторизован и нет активного теста)
+    if (savedStudent && !session) {
         await processTestCode(ctx, userId, text, savedStudent);
         return;
     }
@@ -267,7 +271,7 @@ bot.action(/answer:(\d+)/, async (ctx) => {
     testManager.addToMessageChain(userId, resultMessage.message_id);
     
     if (isCompleted) {
-        // Удаляем результат через 2 секунды и завершаем тест
+        // Удаляем результат через 10 секунд и завершаем тест
         setTimeout(async () => {
             try {
                 await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
@@ -275,7 +279,7 @@ bot.action(/answer:(\d+)/, async (ctx) => {
                 // Игнорируем
             }
             setTimeout(() => finishTest(ctx, session), 500);
-        }, 2000);
+        }, 10000);
     } else {
         // Удаляем результат через 2 секунды и показываем следующий вопрос
         setTimeout(async () => {
@@ -359,7 +363,7 @@ async function processStudentAuth(ctx, userId, text) {
 }
 
 async function requestTestCode(ctx, userId) {
-    await sendMessageWithCleanup(ctx, userId, '📝 *Введите код теста*\n\n*Доступные тесты:*\n• `ttii7` - Компьютер — универсальное устройство (7 класс)\n• `test` - Основной тест\n\nПросто отправьте код теста:', {
+    await sendMessageWithCleanup(ctx, userId, '📝 *Введите код теста*\n\nПросто отправьте код теста (код присылается преподавателем):', {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard()
     });
@@ -369,20 +373,25 @@ async function processTestCode(ctx, userId, testCode, student) {
     // Удаляем сообщение пользователя с кодом теста
     await deleteUserMessage(ctx, userId);
     
+    // Простая валидация кода теста
+    if (!testCode || testCode.trim().length < 3) {
+        await sendMessageWithCleanup(ctx, userId, '❌ *Неверный код теста*\n\nКод должен содержать не менее 3 символов.', {
+            parse_mode: 'Markdown'
+        });
+        return;
+    }
+    
+    // Очистка кода от лишних символов
+    const cleanTestCode = testCode.trim().toLowerCase();
+    
     try {
-        // Проверяем существование теста
-        const tests = testLoader.getAvailableTests();
-        const testExists = tests.some(test => test.name === testCode);
+        // Загружаем тест напрямую
+        const testData = await testLoader.loadTest(cleanTestCode);
         
-        if (!testExists) {
-            await sendMessageWithCleanup(ctx, userId, `❌ *Тест "${testCode}" не найден*\n\n*Доступные тесты:*\n• ttii7\n• test\n\nИспользуйте кнопку "Начать тест" для выбора теста.`, {
-                parse_mode: 'Markdown'
-            });
-            return;
+        // Проверяем структуру теста
+        if (!testData || !testData.TEST_CONFIG || !testData.questionsBank) {
+            throw new Error('Неверный формат теста');
         }
-        
-        // Загружаем тест
-        const testData = await testLoader.loadTest(testCode);
         
         // Создаем сессию теста
         const session = testManager.createTestSession(userId, testData, student);
@@ -395,7 +404,7 @@ async function processTestCode(ctx, userId, testCode, student) {
         
     } catch (error) {
         console.error('Ошибка начала теста:', error);
-        await sendMessageWithCleanup(ctx, userId, `❌ *Ошибка:* ${error.message}\n\nПопробуйте другой тест или обратитесь в поддержку.`, {
+        await sendMessageWithCleanup(ctx, userId, `❌ *Не удалось загрузить тест*\n\nКод: "${cleanTestCode}" не найден или произошла ошибка загрузки.\n\nПроверьте правильность кода и попробуйте снова.`, {
             parse_mode: 'Markdown'
         });
     }
@@ -499,13 +508,13 @@ ${rating}
         // Сохраняем финальное сообщение как активное
         testManager.setActiveMessage(ctx.from.id, finalMessage.message_id);
         
-        // Показываем главное меню через 5 секунды
+        // Показываем главное меню через 10 секунд
         setTimeout(async () => {
             const savedStudent = testManager.getStudent(ctx.from.id);
             if (savedStudent) {
                 await showMainMenu(ctx, ctx.from.id, savedStudent);
             }
-        }, 5000);
+        }, 10000);
         
     } catch (error) {
         console.error('Ошибка завершения теста:', error);
