@@ -1,15 +1,7 @@
 const { Telegraf, Markup } = require('telegraf');
 require('dotenv').config();
 
-const { 
-    CONFIG, 
-    TestLoader, 
-    TestManager, 
-    FirebaseService, 
-    initializeFirebase, 
-    setupAdminConsole,
-    formatUptime 
-} = require('./services');
+const { CONFIG, TestLoader, TestManager, FirebaseService, initializeFirebase } = require('./services');
 const STUDENTS_DB = require('./students');
 
 // Используем токен из .env или из CONFIG
@@ -25,11 +17,6 @@ const bot = new Telegraf(botToken);
 const testLoader = new TestLoader();
 const testManager = new TestManager();
 
-// Глобальные переменные для доступа из админ-консоли
-global.testManagerInstance = testManager;
-global.testLoaderInstance = testLoader;
-global.startTime = Date.now();
-
 // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 function formatDuration(minutes) {
     if (minutes < 1) return 'менее минуты';
@@ -40,22 +27,6 @@ function formatDuration(minutes) {
 
 function escapeMarkdown(text) {
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-}
-
-function formatQuestionText(text) {
-    return text
-        .replace(/{([^}]+)}/g, '`$1`')  // Множества в моноширинный
-        .replace(/∅/g, '∅')           // Пустое множество
-        .replace(/∈/g, '∈')           // Принадлежность
-        .replace(/⊆/g, '⊆')           // Подмножество
-        .replace(/∩/g, '∩')           // Пересечение
-        .replace(/∪/g, '∪')           // Объединение
-        .replace(/\n/g, '\n\n');      // Двойной отступ
-}
-
-// Проверка на админа
-function isAdmin(userId) {
-    return userId.toString() === CONFIG.ADMIN_TELEGRAM_ID;
 }
 
 // Функция для отправки сообщения с автоматическим удалением предыдущего активного
@@ -88,7 +59,7 @@ async function sendTempMessage(ctx, userId, text, options = {}) {
         } catch (error) {
             // Игнорируем ошибки удаления
         }
-    }, CONFIG.MESSAGE_TIMING.TEMP_MESSAGE);
+    }, 3000);
     
     return message;
 }
@@ -139,7 +110,6 @@ bot.command('help', async (ctx) => {
 /start - Главное меню
 /help - Эта справка
 /cancel - Отменить текущий тест
-${isAdmin(userId) ? '/admin - Панель администратора\n' : ''}
 
 *Процесс тестирования:*
 1. Выберите "Начать тест"
@@ -193,37 +163,6 @@ bot.command('cancel', async (ctx) => {
     }
 });
 
-// Команда админа
-bot.command('admin', async (ctx) => {
-    const userId = ctx.from.id;
-    
-    if (!isAdmin(userId)) {
-        await ctx.reply('⛔ У вас нет прав администратора');
-        return;
-    }
-    
-    await deleteUserMessage(ctx, userId);
-    
-    const adminMenu = `
-🔧 *Панель администратора*
-
-📊 *Статистика:*
-• Активных сессий: ${testManager.userSessions.size}
-• Авторизованных учеников: ${testManager.userStudents.size}
-• Загруженных тестов: ${testLoader.cache.size}
-
-🛠️ *Действия:*
-Нажмите кнопку ниже для просмотра статистики.`;
-
-    await sendMessageWithCleanup(ctx, userId, adminMenu, {
-        parse_mode: 'Markdown',
-        ...Markup.keyboard([
-            ['📊 Статистика', '👥 Пользователи'],
-            ['📚 Тесты', '🔙 Главное меню']
-        ]).resize()
-    });
-});
-
 // ==================== ОБРАБОТКА ТЕКСТА ====================
 bot.on('text', async (ctx) => {
     const userId = ctx.from.id;
@@ -245,34 +184,6 @@ bot.on('text', async (ctx) => {
         return;
     }
     
-    // Обработка админских команд
-    if (isAdmin(userId)) {
-        if (text === '📊 Статистика') {
-            await deleteUserMessage(ctx, userId);
-            await showAdminStats(ctx, userId);
-            return;
-        }
-        if (text === '👥 Пользователи') {
-            await deleteUserMessage(ctx, userId);
-            await showAdminUsers(ctx, userId);
-            return;
-        }
-        if (text === '📚 Тесты') {
-            await deleteUserMessage(ctx, userId);
-            await showAdminTests(ctx, userId);
-            return;
-        }
-        if (text === '🔙 Главное меню') {
-            await deleteUserMessage(ctx, userId);
-            if (savedStudent) {
-                await showMainMenu(ctx, userId, savedStudent);
-            } else {
-                await requestStudentAuth(ctx, userId);
-            }
-            return;
-        }
-    }
-    
     // Обработка кнопок меню
     if (text === '🚀 Начать тест') {
         await deleteUserMessage(ctx, userId);
@@ -285,38 +196,6 @@ bot.on('text', async (ctx) => {
         }
         
         await requestTestCode(ctx, userId);
-        return;
-    }
-    
-    if (text === '📋 Показать тесты') {
-        await deleteUserMessage(ctx, userId);
-        
-        const tests = testLoader.getAvailableTests();
-        let message = '📋 *Доступные тесты:*\n\n';
-        tests.forEach(test => {
-            message += `🎯 *${test.name}*\n📝 ${test.title}\n\n`;
-        });
-        message += 'Для начала теста введите его код или нажмите "Начать тест"';
-        
-        await sendMessageWithCleanup(ctx, userId, message, {
-            parse_mode: 'Markdown'
-        });
-        return;
-    }
-    
-    if (text === '📊 Мои результаты') {
-        await deleteUserMessage(ctx, userId);
-        
-        if (!savedStudent) {
-            await sendMessageWithCleanup(ctx, userId, '❌ *Сначала нужно авторизоваться!*', {
-                parse_mode: 'Markdown'
-            });
-            return;
-        }
-        
-        await sendMessageWithCleanup(ctx, userId, '📊 *Ваши результаты*\n\nФункция просмотра результатов находится в разработке. Скоро появится!', {
-            parse_mode: 'Markdown'
-        });
         return;
     }
     
@@ -344,10 +223,8 @@ bot.on('text', async (ctx) => {
         return;
     }
     
-    // Проверяем, может быть это код теста (не чувствительно к регистру)
-    const lowerText = text.toLowerCase();
-    if (lowerText.startsWith('ttii') || lowerText === 'test' || lowerText === 'teststat89') {
-        await deleteUserMessage(ctx, userId);
+    // Обработка ввода кода теста
+    if (text.startsWith('ttii') || text === 'test') {
         await processTestCode(ctx, userId, text, savedStudent);
         return;
     }
@@ -367,9 +244,7 @@ bot.on('text', async (ctx) => {
 bot.action(/answer:(\d+)/, async (ctx) => {
     const answerIndex = parseInt(ctx.match[1]);
     const userId = ctx.from.id;
-    
-    // Показываем индикатор загрузки
-    await ctx.answerCbQuery('⏳ Проверяем ответ...');
+    const messageId = ctx.callbackQuery.message.message_id;
     
     const result = testManager.answerQuestion(userId, answerIndex);
     if (!result) {
@@ -382,74 +257,54 @@ bot.action(/answer:(\d+)/, async (ctx) => {
     // Удаляем текущий вопрос
     await testManager.deleteCurrentQuestionMessage(userId, ctx);
     
-    // Анимированный ответ
-    const answerEmoji = isCorrect ? '🎯' : '💥';
-    const message = isCorrect ? `
-✅ *ПРАВИЛЬНО!* ${answerEmoji}
-
-🎉 Отличная работа! Продолжайте в том же духе!
-    ` : `
-❌ *НЕПРАВИЛЬНО* ${answerEmoji}
-
-💡 Не расстраивайтесь! Следующий вопрос будет лучше!
-    `;
+    // Показываем результат ответа
+    const resultMessage = await ctx.reply(
+        `✅ *Ответ принят!*\n\n${isCorrect ? '✅ Правильно!' : '❌ Неправильно'}\n${isCompleted ? '\n⏳ *Подсчитываем результаты...*' : ''}`,
+        { parse_mode: 'Markdown' }
+    );
     
-    // Отправляем красивый результат
-    const resultMessage = await ctx.reply(message, {
-        parse_mode: 'Markdown'
-    });
-    
+    // Добавляем результат в цепочку
     testManager.addToMessageChain(userId, resultMessage.message_id);
     
-    // Удаляем через 2.5 секунды
-    setTimeout(async () => {
-        try {
-            await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
-        } catch (error) {
-            // Игнорируем
-        }
-        
-        if (isCompleted) {
-            // Небольшая задержка перед финалом
-            setTimeout(() => finishTest(ctx, session), 1000);
-        } else {
-            // Показываем следующий вопрос с анимацией
-            const loadingMessage = await ctx.reply('🌀 *Загружаем следующий вопрос...*', {
-                parse_mode: 'Markdown'
-            });
-            
-            setTimeout(async () => {
-                try {
-                    await ctx.telegram.deleteMessage(ctx.chat.id, loadingMessage.message_id);
-                } catch (error) {
-                    // Игнорируем
-                }
-                await showQuestion(ctx, session);
-            }, CONFIG.MESSAGE_TIMING.QUESTION_TRANSITION);
-        }
-    }, CONFIG.MESSAGE_TIMING.ANSWER_FEEDBACK - 1500);
+    if (isCompleted) {
+        // Удаляем результат через 2 секунды и завершаем тест
+        setTimeout(async () => {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
+            } catch (error) {
+                // Игнорируем
+            }
+            setTimeout(() => finishTest(ctx, session), 500);
+        }, 2000);
+    } else {
+        // Удаляем результат через 2 секунды и показываем следующий вопрос
+        setTimeout(async () => {
+            try {
+                await ctx.telegram.deleteMessage(ctx.chat.id, resultMessage.message_id);
+            } catch (error) {
+                // Игнорируем
+            }
+            setTimeout(() => showQuestion(ctx, session), 500);
+        }, 2000);
+    }
+    
+    // Подтверждаем нажатие кнопки
+    await ctx.answerCbQuery();
 });
 
 // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 async function showMainMenu(ctx, userId, student) {
-    const welcomeMessage = `
-🎓 *Добро пожаловать в школьную систему тестирования!*
+    await sendMessageWithCleanup(ctx, userId, `👋 *Привет, ${escapeMarkdown(student.firstName)} ${escapeMarkdown(student.lastName)}!*
 
-👤 *Ученик:* ${escapeMarkdown(student.firstName)} ${escapeMarkdown(student.lastName)}
-🏫 *Класс:* ${student.class} | 🆔 ID: ${student.id}
-📅 *Сегодня:* ${new Date().toLocaleDateString('ru-RU')}
+🏫 *Класс:* ${student.class}
+🆔 *ID:* ${student.id}
 
-👇 *Выберите действие:*`;
-    
-    const keyboard = Markup.keyboard([
-        ['📝 Начать тест', '📋 Список тестов'],
-        ['📊 Мои результаты', '🆘 Помощь'],
-        ['👤 Сменить профиль']
-    ]).resize();
-    
-    await sendMessageWithCleanup(ctx, userId, welcomeMessage, {
+Выберите действие:`, {
         parse_mode: 'Markdown',
-        ...keyboard
+        ...Markup.keyboard([
+            ['🚀 Начать тест', '🆘 Помощь'],
+            ['👤 Сменить пользователя']
+        ]).resize()
     });
 }
 
@@ -504,29 +359,7 @@ async function processStudentAuth(ctx, userId, text) {
 }
 
 async function requestTestCode(ctx, userId) {
-    const tests = testLoader.getAvailableTests();
-    
-    let testCards = '';
-    tests.forEach((test, index) => {
-        const emoji = ['❶', '❷', '❸', '❹', '❺'][index] || '•';
-        testCards += `
-${emoji} *${test.name.toUpperCase()}*
-   📝 ${test.title}
-   🔤 *Код:* \`${test.name}\`
-   ────────────
-`;
-    });
-    
-    const message = `
-📚 *ВЫБОР ТЕСТА*
-
-Доступные тесты:
-${testCards}
-
-📝 *Введите код теста* (например: \`ttii7\`)
-_Или выберите из списка выше_`;
-    
-    await sendMessageWithCleanup(ctx, userId, message, {
+    await sendMessageWithCleanup(ctx, userId, '📝 *Введите код теста*\n\n*Доступные тесты:*\n• `ttii7` - Компьютер — универсальное устройство (7 класс)\n• `test` - Основной тест\n\nПросто отправьте код теста:', {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard()
     });
@@ -537,60 +370,19 @@ async function processTestCode(ctx, userId, testCode, student) {
     await deleteUserMessage(ctx, userId);
     
     try {
-        // Нормализуем код теста: удаляем пробелы, приводим к нижнему регистру
-        const normalizedCode = testCode.trim().toLowerCase();
-        
-        TestManager.logEvent('info', `Поиск теста: введен "${testCode}", нормализован "${normalizedCode}"`);
-        
-        // Проверка минимальной длины кода
-        if (normalizedCode.length < 4) {
-            await sendMessageWithCleanup(ctx, userId, `❌ *Код теста слишком короткий*\n\nКод теста должен содержать минимум 4 символа.\nПроверьте правильность ввода.`, {
-                parse_mode: 'Markdown'
-            });
-            return;
-        }
-        
-        // Проверка на наличие посторонних символов
-        const validCodePattern = /^[a-z0-9]+$/;
-        if (!validCodePattern.test(normalizedCode)) {
-            await sendMessageWithCleanup(ctx, userId, `❌ *Недопустимые символы в коде теста*\n\nКод теста должен содержать только буквы и цифры.\nПроверьте правильность ввода.`, {
-                parse_mode: 'Markdown'
-            });
-            return;
-        }
-        
         // Проверяем существование теста
         const tests = testLoader.getAvailableTests();
-        const testExists = tests.some(test => test.name === normalizedCode);
+        const testExists = tests.some(test => test.name === testCode);
         
         if (!testExists) {
-            // Проверяем похожие коды
-            const similarTests = testLoader.getSimilarTests(normalizedCode);
-            
-            let errorMessage = `❌ *Тест "${testCode}" не найден*\n\n`;
-            
-            if (similarTests.length > 0) {
-                errorMessage += `*Возможно, вы имели в виду:*\n`;
-                similarTests.forEach(test => {
-                    errorMessage += `• \`${test.name}\` - ${test.title}\n`;
-                });
-                errorMessage += `\nПроверьте правильность написания кода.`;
-            } else {
-                errorMessage += `*Доступные тесты:*\n`;
-                tests.forEach(test => {
-                    errorMessage += `• \`${test.name}\` - ${test.title}\n`;
-                });
-                errorMessage += `\nВведите код теста точно как указано выше.`;
-            }
-            
-            await sendMessageWithCleanup(ctx, userId, errorMessage, {
+            await sendMessageWithCleanup(ctx, userId, `❌ *Тест "${testCode}" не найден*\n\n*Доступные тесты:*\n• ttii7\n• test\n\nИспользуйте кнопку "Начать тест" для выбора теста.`, {
                 parse_mode: 'Markdown'
             });
             return;
         }
         
         // Загружаем тест
-        const testData = await testLoader.loadTest(normalizedCode);
+        const testData = await testLoader.loadTest(testCode);
         
         // Создаем сессию теста
         const session = testManager.createTestSession(userId, testData, student);
@@ -602,8 +394,8 @@ async function processTestCode(ctx, userId, testCode, student) {
         await showQuestion(ctx, session);
         
     } catch (error) {
-        TestManager.logEvent('error', `Ошибка начала теста: ${error.message}`);
-        await sendMessageWithCleanup(ctx, userId, `❌ *Ошибка:* ${error.message}\n\nПроверьте правильность кода теста и попробуйте еще раз.`, {
+        console.error('Ошибка начала теста:', error);
+        await sendMessageWithCleanup(ctx, userId, `❌ *Ошибка:* ${error.message}\n\nПопробуйте другой тест или обратитесь в поддержку.`, {
             parse_mode: 'Markdown'
         });
     }
@@ -615,49 +407,26 @@ async function showQuestion(ctx, session) {
         const questionNumber = session.currentQuestionIndex + 1;
         const totalQuestions = session.allQuestions.length;
         
-        // Визуальный прогресс-бар
-        const progressPercentage = Math.round((questionNumber / totalQuestions) * 100);
-        const progressBarLength = 20;
-        const filledBlocks = Math.round((progressPercentage / 100) * progressBarLength);
-        const emptyBlocks = progressBarLength - filledBlocks;
+        const buttons = question.options.map((option, index) => [
+            Markup.button.callback(`${String.fromCharCode(65 + index)}. ${option.t}`, `answer:${index}`)
+        ]);
         
-        const progressBar = '🟩'.repeat(filledBlocks) + '⬜'.repeat(emptyBlocks);
+        // Добавляем информацию о баллах
+        const pointsInfo = question.points === 3 ? '📐 *Задача (3 балла)*' : '📖 *Вопрос (1 балл)*';
         
-        // Индикатор сложности
-        const difficultyIcon = question.points === 3 ? '🔴' : '🟢';
-        const difficultyText = question.points === 3 ? 'Задача (3 балла)' : 'Вопрос (1 балл)';
-        
-        // Форматированный текст вопроса
-        const formattedText = formatQuestionText(question.text);
-        
-        const message = `
-${difficultyIcon} *${difficultyText}*
+        const message = `${pointsInfo}
+📝 *Вопрос ${questionNumber}/${totalQuestions}*
 
-📊 *Прогресс:* ${questionNumber}/${totalQuestions}
-${progressBar} ${progressPercentage}%
+${question.text}
 
-─────────────
-📝 *Вопрос ${questionNumber}:*
-
-${formattedText}
-
-─────────────
 *Выберите правильный ответ:*`;
-        
-        // Кнопки с буквами и цветами
-        const buttons = question.options.map((option, index) => {
-            const letter = String.fromCharCode(65 + index); // A, B, C, D
-            const emoji = ['🅰️', '🅱️', '🆎', '🅾️', '🆑', '🆒', '🆓', '🆔'][index] || '🔘';
-            return [
-                Markup.button.callback(`${emoji} ${letter}. ${option.t}`, `answer:${index}`)
-            ];
-        });
         
         const questionMessage = await ctx.reply(message, {
             parse_mode: 'Markdown',
             ...Markup.inlineKeyboard(buttons)
         });
         
+        // Сохраняем ID сообщения с вопросом
         testManager.setCurrentQuestionMessageId(session.userId, questionMessage.message_id);
         testManager.addToMessageChain(session.userId, questionMessage.message_id);
         
@@ -689,57 +458,30 @@ async function finishTest(ctx, session) {
         // Отправляем в Telegram (если настроено)
         await testManager.sendResultsToTelegram(session);
         
-        // Визуализация результатов
+        // Формируем сообщение с результатом
+        const durationFormatted = formatDuration(Math.floor(result.duration / 60));
         const percentage = Math.round((session.score / session.maxScore) * 100);
         
-        // График результата
-        const scoreBarLength = 20;
-        const filledScore = Math.round((percentage / 100) * scoreBarLength);
-        const scoreBar = '⭐'.repeat(filledScore) + '☆'.repeat(scoreBarLength - filledScore);
+        let rating = '';
+        if (session.grade >= 4) rating = '🏆 *Отличный результат!*';
+        else if (session.grade === 3) rating = '👍 *Хорошая работа!*';
+        else rating = '💪 *Есть над чем поработать!*';
         
-        // Звезды оценки
-        const stars = '⭐'.repeat(session.grade) + '☆'.repeat(5 - session.grade);
-        
-        // Мотивационное сообщение
-        let motivation = '';
-        if (percentage >= 90) {
-            motivation = '🏆 *Блестящий результат!* Вы настоящий эксперт!';
-        } else if (percentage >= 75) {
-            motivation = '🎯 *Отличная работа!* Вы хорошо знаете материал!';
-        } else if (percentage >= 60) {
-            motivation = '👍 *Хорошо!* Есть куда расти!';
-        } else {
-            motivation = '💪 *Продолжайте учиться!* У вас все получится!';
-        }
-        
-        const durationFormatted = formatDuration(Math.floor(result.duration / 60));
-        
-        const message = `
-🎉 *ТЕСТ ЗАВЕРШЕН!*
+        const message = `🎉 *Тест завершен!*
 
-${motivation}
-
-📊 *ВАШИ РЕЗУЛЬТАТЫ:*
-${scoreBar} ${percentage}%
-
+📊 *Ваши результаты:*
 👤 Ученик: ${escapeMarkdown(session.student.lastName)} ${escapeMarkdown(session.student.firstName)}
 🏫 Класс: ${session.student.class}
 ⏱️ Время: ${durationFormatted}
+🎯 Баллы: ${session.score}/${session.maxScore} (${percentage}%)
+📈 Оценка: ${session.grade}/5
 
-🎯 Баллы: *${session.score} из ${session.maxScore}*
-📈 Оценка: ${stars} (${session.grade}/5)
+📖 Правильных вопросов: ${session.correctQuestions}
+📐 Правильных задач: ${session.correctProblems}
 
-📖 Вопросы: ✅ ${session.correctQuestions}
-📐 Задачи: ✅ ${session.correctProblems}
+${rating}
 
-📅 Результат сохранен: ${new Date().toLocaleDateString('ru-RU', { 
-    day: 'numeric', 
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit'
-})}
-
-_Через 15 секунд вернемся в меню..._`;
+Результат сохранен в системе.`;
         
         // Очищаем ВСЕ сообщения теста (включая активное сообщение)
         await testManager.cleanupMessageChain(ctx.from.id, ctx);
@@ -757,107 +499,18 @@ _Через 15 секунд вернемся в меню..._`;
         // Сохраняем финальное сообщение как активное
         testManager.setActiveMessage(ctx.from.id, finalMessage.message_id);
         
-        // Добавляем разделитель перед возвратом в меню
+        // Показываем главное меню через 5 секунды
         setTimeout(async () => {
-            const transitionMessage = await ctx.reply("🔄 *Возвращаемся в главное меню...*", {
-                parse_mode: 'Markdown'
-            });
-            
-            setTimeout(async () => {
-                try {
-                    await ctx.telegram.deleteMessage(ctx.chat.id, transitionMessage.message_id);
-                } catch (error) {}
-                
-                const savedStudent = testManager.getStudent(ctx.from.id);
-                if (savedStudent) {
-                    await showMainMenu(ctx, ctx.from.id, savedStudent);
-                }
-            }, 1500);
-        }, CONFIG.MESSAGE_TIMING.FINAL_RESULT);
+            const savedStudent = testManager.getStudent(ctx.from.id);
+            if (savedStudent) {
+                await showMainMenu(ctx, ctx.from.id, savedStudent);
+            }
+        }, 5000);
         
     } catch (error) {
         console.error('Ошибка завершения теста:', error);
         await sendMessageWithCleanup(ctx, session.userId, '❌ Произошла ошибка при сохранении результатов. Пожалуйста, свяжитесь с администратором.');
     }
-}
-
-// ==================== АДМИНИСТРАТИВНЫЕ ФУНКЦИИ ====================
-async function showAdminStats(ctx, userId) {
-    const sessions = testManager.userSessions;
-    let activeSessionsInfo = '📭 Нет активных сессий';
-    
-    if (sessions.size > 0) {
-        activeSessionsInfo = Array.from(sessions.entries())
-            .map(([id, session]) => 
-                `👤 ${session.student.lastName} ${session.student.firstName} (${session.student.class} класс)\n   📝 ${session.testTitle}\n   📊 ${session.currentQuestionIndex + 1}/${session.allQuestions.length} вопросов`
-            )
-            .join('\n\n');
-    }
-    
-    const stats = `
-📈 *Детальная статистика*
-
-👥 *Пользователи:*
-• Активных сессий: ${sessions.size}
-• Авторизованных: ${testManager.userStudents.size}
-
-📚 *Тесты:*
-• В кэше: ${testLoader.cache.size}
-• Доступно: ${testLoader.getAvailableTests().length}
-
-⏱️ *Система:*
-• Время работы: ${formatUptime(Date.now() - startTime)}
-• Память: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
-
-🎯 *Активные тесты:*
-${activeSessionsInfo}
-    `;
-    
-    await sendMessageWithCleanup(ctx, userId, stats, { parse_mode: 'Markdown' });
-}
-
-async function showAdminUsers(ctx, userId) {
-    const users = testManager.userStudents;
-    
-    if (users.size === 0) {
-        await sendMessageWithCleanup(ctx, userId, '📭 *Нет авторизованных пользователей*', {
-            parse_mode: 'Markdown'
-        });
-        return;
-    }
-    
-    let usersList = '';
-    Array.from(users.entries()).forEach(([id, student]) => {
-        const session = testManager.getSession(id);
-        const status = session ? '📝 В процессе теста' : '✅ Ожидает';
-        usersList += `👤 *${student.lastName} ${student.firstName}*\n🏫 Класс: ${student.class}\n🆔 User ID: ${id}\n📋 Статус: ${status}\n\n`;
-    });
-    
-    await sendMessageWithCleanup(ctx, userId, `👥 *Авторизованные ученики (${users.size})*\n\n${usersList}`, {
-        parse_mode: 'Markdown'
-    });
-}
-
-async function showAdminTests(ctx, userId) {
-    const tests = testLoader.cache;
-    
-    if (tests.size === 0) {
-        await sendMessageWithCleanup(ctx, userId, '📭 *Нет загруженных тестов*', {
-            parse_mode: 'Markdown'
-        });
-        return;
-    }
-    
-    let testsList = '';
-    Array.from(tests.entries()).forEach(([name, data]) => {
-        const questions = data.questionsBank?.length || 0;
-        const problems = data.problemsBank?.length || 0;
-        testsList += `📚 *${data.TEST_CONFIG?.title || 'Без названия'}*\n🔤 Код: ${name}\n📖 Вопросов: ${questions}\n📐 Задач: ${problems}\n🎯 Макс. балл: ${data.TEST_CONFIG?.maxScore || 'N/A'}\n\n`;
-    });
-    
-    await sendMessageWithCleanup(ctx, userId, `📚 *Загруженные тесты (${tests.size})*\n\n${testsList}`, {
-        parse_mode: 'Markdown'
-    });
 }
 
 // ==================== ОБРАБОТКА ОШИБОК ====================
@@ -875,10 +528,6 @@ bot.catch((err, ctx) => {
 async function startBot() {
     try {
         console.log('🚀 Запуск школьного бота тестирования...');
-        console.log('═══════════════════════════════════════════\n');
-        
-        // Настройка консоли администратора
-        setupAdminConsole();
         
         // Проверяем Firebase
         if (initializeFirebase()) {

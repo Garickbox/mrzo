@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const admin = require('firebase-admin');
-const readline = require('readline');
 
 // Загрузка переменных окружения
 require('dotenv').config();
@@ -31,15 +30,7 @@ const CONFIG = {
     
     // Telegram
     ADMIN_TELEGRAM_ID: process.env.ADMIN_TELEGRAM_ID,
-    RESULTS_CHAT_ID: process.env.RESULTS_CHAT_ID,
-    
-    // Время отображения сообщений (в миллисекундах)
-    MESSAGE_TIMING: {
-        ANSWER_FEEDBACK: 4000,      // Результат ответа (правильно/неправильно)
-        FINAL_RESULT: 15000,        // Финальный результат теста
-        TEMP_MESSAGE: 3000,         // Временные сообщения
-        QUESTION_TRANSITION: 1500   // Переход между вопросами
-    }
+    RESULTS_CHAT_ID: process.env.RESULTS_CHAT_ID
 };
 
 // ==================== FIREBASE ИНИЦИАЛИЗАЦИЯ ====================
@@ -68,7 +59,7 @@ function initializeFirebase() {
         
         db = admin.firestore();
         firebaseInitialized = true;
-        TestManager.logEvent('admin', 'Firebase Admin подключен');
+        console.log('✅ Firebase Admin подключен');
         return true;
     } catch (error) {
         console.error('❌ Ошибка инициализации Firebase:', error.message);
@@ -89,7 +80,7 @@ class TestLoader {
         }
 
         try {
-            TestManager.logEvent('info', `Загружаю тест: ${testName}`);
+            console.log(`📥 Загружаю тест: ${testName}`);
             const response = await fetch(`${this.baseUrl}${testName}.js`);
             
             if (!response.ok) {
@@ -100,10 +91,10 @@ class TestLoader {
             const testData = this.parseTestData(jsCode, testName);
             
             this.cache.set(testName, testData);
-            TestManager.logEvent('test_load', `Тест загружен: ${testData.TEST_CONFIG.title}`);
+            console.log(`✅ Тест загружен: ${testData.TEST_CONFIG.title}`);
             return testData;
         } catch (error) {
-            TestManager.logEvent('error', `Ошибка загрузки теста "${testName}": ${error.message}`);
+            console.error(`❌ Ошибка загрузки теста "${testName}":`, error.message);
             throw new Error(`Не удалось загрузить тест "${testName}". Проверьте интернет соединение и правильность названия теста.`);
         }
     }
@@ -140,24 +131,8 @@ class TestLoader {
     getAvailableTests() {
         return [
             { name: 'ttii7', title: 'Компьютер — универсальное устройство (7 класс)' },
-            { name: 'test', title: 'Основной тест' },
-            { name: 'teststat89', title: 'Случайные опыты, события и множества (8-9 класс)' }
+            { name: 'test', title: 'Основной тест' }
         ];
-    }
-
-    getSimilarTests(searchTerm) {
-        const normalizedSearch = searchTerm.toLowerCase().trim();
-        const allTests = this.getAvailableTests();
-        
-        // Поиск по точному совпадению
-        const exactMatch = allTests.find(test => test.name === normalizedSearch);
-        if (exactMatch) return [exactMatch];
-        
-        // Поиск по начальным символам
-        return allTests.filter(test => 
-            test.name.startsWith(normalizedSearch.substring(0, 3)) ||
-            test.name.includes(normalizedSearch)
-        );
     }
 }
 
@@ -168,71 +143,12 @@ class TestManager {
         this.userStudents = new Map();
         this.userMessageChains = new Map();
         this.userActiveMessage = new Map(); // Активное сообщение для каждого пользователя
-        
-        // Очистка старых сессий каждые 5 минут
-        setInterval(() => this.cleanupOldSessions(), 5 * 60 * 1000);
-    }
-
-    // Метод для логирования с цветами и временем
-    static logEvent(type, message, data = null) {
-        const timestamp = new Date().toLocaleTimeString('ru-RU');
-        const colors = {
-            INFO: '\x1b[36m',    // Cyan
-            SUCCESS: '\x1b[32m', // Green
-            WARNING: '\x1b[33m', // Yellow
-            ERROR: '\x1b[31m',   // Red
-            RESET: '\x1b[0m'     // Reset
-        };
-        
-        const typeMap = {
-            'test_start': { emoji: '🚀', color: colors.SUCCESS, type: 'START' },
-            'test_complete': { emoji: '✅', color: colors.SUCCESS, type: 'COMPLETE' },
-            'test_load': { emoji: '📥', color: colors.INFO, type: 'LOAD' },
-            'test_error': { emoji: '❌', color: colors.ERROR, type: 'ERROR' },
-            'auth_success': { emoji: '👤', color: colors.INFO, type: 'AUTH' },
-            'auth_fail': { emoji: '🚫', color: colors.WARNING, type: 'AUTH_FAIL' },
-            'admin': { emoji: '🔧', color: colors.INFO, type: 'ADMIN' },
-            'info': { emoji: 'ℹ️', color: colors.INFO, type: 'INFO' }
-        };
-        
-        const event = typeMap[type] || { emoji: '📝', color: colors.INFO, type: type.toUpperCase() };
-        
-        let logMessage = `${event.color}[${timestamp}] ${event.emoji} ${event.type}: ${message}${colors.RESET}`;
-        
-        if (data && Object.keys(data).length > 0) {
-            logMessage += `\n${event.color}    ↳ Данные: ${JSON.stringify(data, null, 2)}${colors.RESET}`;
-        }
-        
-        console.log(logMessage);
-    }
-
-    cleanupOldSessions() {
-        const now = Date.now();
-        const timeout = 30 * 60 * 1000; // 30 минут
-        
-        for (const [userId, session] of this.userSessions.entries()) {
-            if (now - session.startTime > timeout) {
-                TestManager.logEvent('info', `Удалена старая сессия пользователя ${userId}`, {
-                    student: `${session.student.lastName} ${session.student.firstName}`,
-                    test: session.testTitle,
-                    duration: Math.floor((now - session.startTime) / 1000 / 60) + ' мин'
-                });
-                this.userSessions.delete(userId);
-                this.userMessageChains.delete(userId);
-                this.userActiveMessage.delete(userId);
-            }
-        }
     }
 
     // Авторизация пользователей
     saveStudent(userId, student) {
         this.userStudents.set(userId, student);
-        TestManager.logEvent('auth_success', `Ученик авторизован`, {
-            userId,
-            student: `${student.lastName} ${student.firstName}`,
-            class: student.class,
-            id: student.id
-        });
+        console.log(`✅ Сохранен ученик для userId ${userId}: ${student.lastName} ${student.firstName}`);
         return true;
     }
 
@@ -241,14 +157,8 @@ class TestManager {
     }
 
     removeStudent(userId) {
-        const student = this.userStudents.get(userId);
-        if (student) {
-            TestManager.logEvent('auth_success', `Ученик удален`, {
-                userId,
-                student: `${student.lastName} ${student.firstName}`
-            });
-        }
         this.userStudents.delete(userId);
+        console.log(`🗑️ Удален ученик для userId ${userId}`);
         return true;
     }
 
@@ -293,7 +203,7 @@ class TestManager {
         const chain = this.userMessageChains.get(userId);
         if (!chain || chain.length === 0) return false;
         
-        TestManager.logEvent('info', `Удаляю цепочку из ${chain.length} сообщений для userId ${userId}`);
+        console.log(`🧹 Удаляю цепочку из ${chain.length} сообщений для userId ${userId}`);
         
         for (const messageId of chain) {
             try {
@@ -336,12 +246,7 @@ class TestManager {
         };
         
         this.userSessions.set(userId, session);
-        TestManager.logEvent('test_start', `Старт теста "${testData.TEST_CONFIG.title}"`, {
-            userId,
-            student: `${student.lastName} ${student.firstName}`,
-            class: student.class,
-            questions: allQuestions.length
-        });
+        console.log(`✅ Создана сессия теста для ${student.lastName} ${student.firstName} (${student.class} класс)`);
         return session;
     }
 
@@ -350,14 +255,6 @@ class TestManager {
     }
 
     deleteSession(userId) {
-        const session = this.userSessions.get(userId);
-        if (session) {
-            TestManager.logEvent('info', `Сессия удалена`, {
-                userId,
-                test: session.testTitle,
-                student: `${session.student.lastName} ${session.student.firstName}`
-            });
-        }
         this.userMessageChains.delete(userId);
         this.userActiveMessage.delete(userId);
         return this.userSessions.delete(userId);
@@ -424,12 +321,7 @@ class TestManager {
                 }
             });
             
-            TestManager.logEvent('test_complete', `Тест завершен`, {
-                student: `${session.student.lastName} ${session.student.firstName}`,
-                score: `${session.score}/${session.maxScore}`,
-                grade: session.grade,
-                duration: Math.floor((session.endTime - session.startTime) / 1000) + ' сек'
-            });
+            console.log(`✅ Тест завершен: ${session.score}/${session.maxScore}, оценка ${session.grade}`);
         }
         
         return {
@@ -461,7 +353,7 @@ class TestManager {
         try {
             const config = session.telegramConfig;
             if (!config || !config.botToken || !config.chatId) {
-                TestManager.logEvent('info', 'Telegram не настроен для этого теста');
+                console.log('⚠️ Telegram не настроен для этого теста');
                 return false;
             }
             
@@ -495,14 +387,14 @@ class TestManager {
             
             const data = await response.json();
             if (data.ok) {
-                TestManager.logEvent('info', 'Результаты отправлены в Telegram');
+                console.log('✅ Результаты отправлены в Telegram');
                 return true;
             } else {
-                TestManager.logEvent('error', 'Ошибка Telegram API:', data.description);
+                console.error('❌ Ошибка Telegram API:', data.description);
                 return false;
             }
         } catch (error) {
-            TestManager.logEvent('error', 'Ошибка отправки в Telegram:', error.message);
+            console.error('❌ Ошибка отправки в Telegram:', error.message);
             return false;
         }
     }
@@ -512,7 +404,7 @@ class TestManager {
 class FirebaseService {
     static async saveTestResult(userId, session, result) {
         if (!initializeFirebase() || !db) {
-            TestManager.logEvent('warning', 'Firebase не подключен, результат не сохранен');
+            console.log('⚠️ Firebase не подключен, результат не сохранен');
             return false;
         }
         
@@ -534,17 +426,17 @@ class FirebaseService {
             };
             
             await db.collection('telegram_results').add(resultData);
-            TestManager.logEvent('info', `Результат сохранен в Firebase для userId: ${userId}`);
+            console.log(`✅ Результат сохранен в Firebase для userId: ${userId}`);
             return true;
         } catch (error) {
-            TestManager.logEvent('error', 'Ошибка сохранения в Firebase:', error.message);
+            console.error('❌ Ошибка сохранения в Firebase:', error.message);
             return false;
         }
     }
 
     static async getUserResults(userId) {
         if (!initializeFirebase() || !db) {
-            TestManager.logEvent('warning', 'Firebase не подключен');
+            console.log('⚠️ Firebase не подключен');
             return [];
         }
         
@@ -561,187 +453,10 @@ class FirebaseService {
             
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (error) {
-            TestManager.logEvent('error', 'Ошибка получения результатов:', error.message);
+            console.error('❌ Ошибка получения результатов:', error.message);
             return [];
         }
     }
-}
-
-// ==================== АДМИНИСТРАТИВНЫЕ ФУНКЦИИ ====================
-function setupAdminConsole() {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    console.log('\n\x1b[36m🔧 *Консоль администратора активирована*\x1b[0m');
-    console.log('\x1b[33mДоступные команды:\x1b[0m');
-    console.log('  stats       - Статистика системы');
-    console.log('  sessions    - Активные сессии тестов');
-    console.log('  users       - Авторизованные пользователи');
-    console.log('  tests       - Загруженные тесты');
-    console.log('  clear       - Очистить консоль');
-    console.log('  help        - Справка');
-    console.log('  exit        - Выйти (бот продолжит работу)\n');
-
-    rl.on('line', (input) => {
-        handleAdminCommand(input.trim(), rl);
-    });
-}
-
-function handleAdminCommand(cmd, rl) {
-    const testManager = global.testManagerInstance;
-    const testLoader = global.testLoaderInstance;
-    
-    switch(cmd.toLowerCase()) {
-        case 'stats':
-            showStatistics(testManager, testLoader);
-            break;
-        case 'sessions':
-            showActiveSessions(testManager);
-            break;
-        case 'users':
-            showActiveUsers(testManager);
-            break;
-        case 'tests':
-            showLoadedTests(testLoader);
-            break;
-        case 'clear':
-            console.clear();
-            console.log('\x1b[32m🔄 Консоль очищена\n\x1b[0m');
-            break;
-        case 'help':
-            console.log(`
-\x1b[36m📋 Доступные команды:\x1b[0m
-• stats    - Общая статистика
-• sessions - Активные тестовые сессии (ID, ученик, вопрос)
-• users    - Авторизованные ученики (ID, ФИО, класс)
-• tests    - Загруженные тесты в кэше
-• clear    - Очистить консоль
-• help     - Эта справка
-• exit     - Выйти из консоли (бот продолжит работу)
-            `);
-            break;
-        case 'exit':
-            console.log('\x1b[32m👋 Выход из консоли администратора. Бот продолжает работу.\x1b[0m');
-            rl.close();
-            break;
-        default:
-            console.log('\x1b[31m❌ Неизвестная команда. Введите "help" для списка команд.\x1b[0m');
-    }
-}
-
-function showStatistics(testManager, testLoader) {
-    const now = new Date();
-    const uptime = global.startTime ? Date.now() - global.startTime : 0;
-    
-    console.log(`
-\x1b[36m📊 *СТАТИСТИКА СИСТЕМЫ*\x1b[0m
-\x1b[33m──────────────────────\x1b[0m
-\x1b[32m👥 Пользователи:\x1b[0m
-• Активные сессии: ${testManager.userSessions.size}
-• Авторизованные ученики: ${testManager.userStudents.size}
-• Активные цепочки сообщений: ${testManager.userMessageChains.size}
-
-\x1b[32m📚 Тесты:\x1b[0m
-• Загружено тестов: ${testLoader.cache.size}
-• Доступно тестов: ${testLoader.getAvailableTests().length}
-• Время работы бота: ${formatUptime(uptime)}
-
-\x1b[32m⚙️ Система:\x1b[0m
-• Память: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
-• Время: ${now.toLocaleTimeString('ru-RU')}
-• Дата: ${now.toLocaleDateString('ru-RU')}
-\x1b[33m──────────────────────\x1b[0m
-    `);
-}
-
-function showActiveSessions(testManager) {
-    const sessions = testManager.userSessions;
-    
-    if (sessions.size === 0) {
-        console.log('\x1b[33m📭 Нет активных тестовых сессий\x1b[0m');
-        return;
-    }
-    
-    console.log(`
-\x1b[36m🎯 АКТИВНЫЕ ТЕСТОВЫЕ СЕССИИ (${sessions.size})\x1b[0m
-\x1b[33m──────────────────────────────────────\x1b[0m
-${Array.from(sessions.entries()).map(([userId, session]) => {
-    const progress = session.currentQuestionIndex + 1;
-    const total = session.allQuestions.length;
-    const percentage = Math.round((progress / total) * 100);
-    const timeElapsed = Math.floor((Date.now() - session.startTime) / 1000 / 60);
-    
-    return `\x1b[32m👤 ID:\x1b[0m ${userId}
-\x1b[32m📝 Тест:\x1b[0m ${session.testTitle}
-\x1b[32m🎓 Ученик:\x1b[0m ${session.student.lastName} ${session.student.firstName} (${session.student.class} класс)
-\x1b[32m📊 Прогресс:\x1b[0m ${progress}/${total} вопросов (${percentage}%)
-\x1b[32m⏱️ Время:\x1b[0m ${timeElapsed} мин
-\x1b[33m──────────────────────────────────────\x1b[0m`;
-}).join('\n')}
-    `);
-}
-
-function showActiveUsers(testManager) {
-    const users = testManager.userStudents;
-    
-    if (users.size === 0) {
-        console.log('\x1b[33m📭 Нет авторизованных пользователей\x1b[0m');
-        return;
-    }
-    
-    console.log(`
-\x1b[36m👥 АВТОРИЗОВАННЫЕ УЧЕНИКИ (${users.size})\x1b[0m
-\x1b[33m──────────────────────────────────────\x1b[0m
-${Array.from(users.entries()).map(([userId, student]) => {
-    const session = testManager.getSession(userId);
-    const status = session ? '\x1b[31m📝 В процессе теста\x1b[0m' : '\x1b[32m✅ Ожидает\x1b[0m';
-    
-    return `\x1b[32m🆔 User ID:\x1b[0m ${userId}
-\x1b[32m👤 Ученик:\x1b[0m ${student.lastName} ${student.firstName}
-\x1b[32m🏫 Класс:\x1b[0m ${student.class}
-\x1b[32m📋 Статус:\x1b[0m ${status}
-\x1b[33m──────────────────────────────────────\x1b[0m`;
-}).join('\n')}
-    `);
-}
-
-function showLoadedTests(testLoader) {
-    const tests = testLoader.cache;
-    
-    if (tests.size === 0) {
-        console.log('\x1b[33m📭 Нет загруженных тестов\x1b[0m');
-        return;
-    }
-    
-    console.log(`
-\x1b[36m📚 ЗАГРУЖЕННЫЕ ТЕСТЫ (${tests.size})\x1b[0m
-\x1b[33m──────────────────────────────────────\x1b[0m
-${Array.from(tests.entries()).map(([name, data]) => {
-    const questions = data.questionsBank?.length || 0;
-    const problems = data.problemsBank?.length || 0;
-    
-    return `\x1b[32m🎯 ${data.TEST_CONFIG?.title || 'Без названия'}\x1b[0m
-\x1b[32m🔤 Код:\x1b[0m ${name}
-\x1b[32m📖 Вопросов:\x1b[0m ${questions}
-\x1b[32m📐 Задач:\x1b[0m ${problems}
-\x1b[32m🎯 Макс. балл:\x1b[0m ${data.TEST_CONFIG?.maxScore || 'N/A'}
-\x1b[33m──────────────────────────────────────\x1b[0m`;
-}).join('\n')}
-    `);
-}
-
-function formatUptime(ms) {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    
-    if (days > 0) return `${days}д ${hours % 24}ч ${minutes % 60}мин`;
-    if (hours > 0) return `${hours}ч ${minutes % 60}мин`;
-    if (minutes > 0) return `${minutes}мин ${seconds % 60}сек`;
-    return `${seconds}сек`;
 }
 
 // Экспорт
@@ -750,7 +465,5 @@ module.exports = {
     TestLoader,
     TestManager,
     FirebaseService,
-    initializeFirebase,
-    setupAdminConsole,
-    formatUptime
+    initializeFirebase
 };
